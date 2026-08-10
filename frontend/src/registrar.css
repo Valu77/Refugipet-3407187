@@ -1,0 +1,279 @@
+/* ========================================
+   CONFIGURACIÓN GENERAL
+======================================== */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Segoe UI", sans-serif;
+}
+
+body {
+  background: #f8fbff;
+}
+
+
+/* ========================================
+   PÁGINA DE REGISTRO
+======================================== */
+
+.register-page {
+  min-height: 100vh;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  padding: 40px 20px;
+
+  background: linear-gradient(
+    135deg,
+    #eaf5ff 0%,
+    #ffffff 50%,
+    #eef7ff 100%
+  );
+}
+
+
+/* ========================================
+   LOGO
+======================================== */
+
+.register-logo {
+  width: 110px;
+  height: 75px;
+
+  overflow: hidden;
+
+  margin-bottom: 20px;
+
+  text-align: center;
+}
+
+.register-logo img {
+  width: 110px;
+  height: 110px;
+
+  object-fit: contain;
+
+  border: none;
+  outline: none;
+
+  transform: translateY(-10px);
+}
+
+
+/* ========================================
+   TARJETA
+======================================== */
+
+.register-card {
+  width: 100%;
+  max-width: 500px;
+
+  background: white;
+
+  padding: 40px;
+
+  border-radius: 18px;
+
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+
+  text-align: center;
+}
+
+
+/* ========================================
+   TÍTULO
+======================================== */
+
+.register-card h1 {
+  color: #0066b3;
+
+  font-size: 32px;
+
+  margin-bottom: 10px;
+}
+
+.register-subtitle {
+  color: #777;
+
+  font-size: 15px;
+
+  line-height: 1.5;
+
+  margin-bottom: 30px;
+}
+
+
+/* ========================================
+   FORMULARIO
+======================================== */
+
+.register-form {
+  width: 100%;
+
+  text-align: left;
+}
+
+
+/* ========================================
+   CAMPOS
+======================================== */
+
+.register-input-group {
+  margin-bottom: 18px;
+}
+
+.register-input-group label {
+  display: block;
+
+  color: #333;
+
+  font-weight: 600;
+
+  margin-bottom: 8px;
+}
+
+.register-input-group input {
+  width: 100%;
+
+  padding: 13px 15px;
+
+  border: 2px solid #dbe8f8;
+
+  border-radius: 9px;
+
+  font-size: 16px;
+
+  outline: none;
+
+  transition: 0.3s;
+}
+
+.register-input-group input:focus {
+  border-color: #0066b3;
+
+  box-shadow: 0 0 0 3px rgba(0, 102, 179, 0.1);
+}
+
+/* ========================================
+   BOTÓN
+======================================== */
+
+.register-button {
+  width: 100%;
+
+  padding: 14px;
+
+  border: none;
+
+  border-radius: 9px;
+
+  background: #ff9800;
+
+  color: white;
+
+  font-size: 17px;
+
+  font-weight: bold;
+
+  cursor: pointer;
+
+  transition: 0.3s;
+
+  box-shadow: 0 4px 10px rgba(255, 152, 0, 0.25);
+}
+
+.register-button:hover {
+  background: #e68900;
+
+  transform: translateY(-2px);
+}
+
+
+/* ========================================
+   INICIAR SESIÓN
+======================================== */
+
+.login-text {
+  margin-top: 25px;
+
+  color: #666;
+
+  font-size: 14px;
+}
+
+.login-text a {
+  color: #0066b3;
+
+  text-decoration: none;
+
+  font-weight: bold;
+}
+
+.login-text a:hover {
+  color: #ff9800;
+}
+
+
+/* ========================================
+   VOLVER AL INICIO
+======================================== */
+
+.register-back-home {
+  display: inline-block;
+
+  margin-top: 20px;
+
+  color: #0066b3;
+
+  text-decoration: none;
+
+  font-size: 14px;
+
+  font-weight: 600;
+}
+
+.register-back-home:hover {
+  color: #ff9800;
+}
+
+
+/* ========================================
+   RESPONSIVE
+======================================== */
+
+@media (max-width: 600px) {
+
+  .register-page {
+    padding: 25px 15px;
+  }
+
+  .register-logo {
+    width: 90px;
+    height: 70px;
+  }
+
+  .register-logo img {
+    width: 100px;
+    height: 100px;
+  }
+
+  .register-card {
+    padding: 30px 22px;
+
+    border-radius: 15px;
+  }
+
+  .register-card h1 {
+    font-size: 27px;
+  }
+
+  .register-subtitle {
+    font-size: 14px;
+  }
+
+}

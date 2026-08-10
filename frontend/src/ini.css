@@ -1,0 +1,645 @@
+/* =========================================
+   GENERAL
+========================================= */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Segoe UI", sans-serif;
+}
+
+html,
+body {
+  width: 100%;
+  min-width: 100%;
+  overflow-x: hidden;
+}
+
+body {
+  background: #f8fbff;
+}
+
+
+/* =========================================
+   HEADER
+========================================= */
+
+.header-inicio {
+  position: fixed;
+  top: 0;
+  left: 0;
+
+  width: 100%;
+  height: 105px;
+
+  background: #0066b3;
+
+  z-index: 1000;
+
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+
+/* =========================================
+   CONTENEDOR HEADER
+========================================= */
+
+.container-header {
+  width: 100%;
+  height: 105px;
+
+  margin: 0;
+  padding: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+
+/* =========================================
+   LOGO + NOMBRE
+========================================= */
+
+.marca {
+  display: flex;
+  align-items: center;
+
+  margin: 0;
+  padding: 0;
+
+  gap: 5px;
+}
+
+
+/* LOGO PEGADO COMPLETAMENTE A LA IZQUIERDA */
+
+.marca .logo {
+  width: 85px;
+  height: 85px;
+
+  display: block;
+
+  margin: 0;
+  padding: 0;
+
+  object-fit: contain;
+}
+
+
+/* TEXTO */
+
+.texto-marca {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+
+  margin: 0;
+  padding: 0;
+}
+
+
+.texto-marca h1 {
+  color: white;
+
+  font-size: 30px;
+  font-weight: 800;
+
+  line-height: 1;
+
+  margin: 0 0 5px 0;
+  padding: 0;
+}
+
+
+.texto-marca p {
+  color: white;
+
+  font-size: 10px;
+  font-weight: 600;
+
+  line-height: 1.2;
+
+  white-space: nowrap;
+
+  margin: 0;
+  padding: 0;
+}
+
+
+/* =========================================
+   MENÚ
+========================================= */
+
+nav {
+  margin: 0;
+  padding: 0 25px 0 0;
+}
+
+
+nav ul {
+  display: flex;
+  align-items: center;
+
+  list-style: none;
+
+  gap: 30px;
+
+  margin: 0;
+  padding: 0;
+}
+
+
+nav ul li {
+  margin: 0;
+  padding: 0;
+}
+
+
+nav ul li a {
+  color: white;
+
+  text-decoration: none;
+
+  font-size: 18px;
+  font-weight: bold;
+
+  white-space: nowrap;
+
+  transition: 0.3s;
+}
+
+
+nav ul li a:hover {
+  color: #ff9800;
+}
+
+
+/* =========================================
+   CARRUSEL
+========================================= */
+
+.slider {
+  position: relative;
+
+  width: 100%;
+  height: calc(100vh - 105px);
+
+  min-height: 550px;
+
+  margin: 105px 0 0 0;
+  padding: 0;
+
+  overflow: hidden;
+
+  display: block;
+}
+
+
+/* CONTENEDOR */
+
+.slides {
+  width: 300%;
+  height: 100%;
+
+  display: flex;
+
+  margin: 0;
+  padding: 0;
+
+  animation: carrusel 15s infinite;
+}
+
+
+/* CADA IMAGEN */
+
+.slide {
+  width: 33.333333%;
+  height: 100%;
+
+  flex: 0 0 33.333333%;
+
+  margin: 0;
+  padding: 0;
+}
+
+
+/* IMAGEN */
+
+.slide img {
+  width: 100%;
+  height: 100%;
+
+  display: block;
+
+  margin: 0;
+  padding: 0;
+
+  object-fit: cover;
+
+  object-position: center;
+}
+
+
+/* =========================================
+   BOTÓN
+========================================= */
+
+.btn-carrusel {
+  position: absolute;
+
+  left: 50%;
+  bottom: 50px;
+
+  transform: translateX(-50%);
+
+  z-index: 10;
+}
+
+
+.btn-carrusel a {
+  display: block;
+
+  padding: 17px 40px;
+
+  background: #ff9800;
+
+  color: white;
+
+  text-decoration: none;
+
+  border-radius: 10px;
+
+  font-size: 21px;
+  font-weight: bold;
+
+  white-space: nowrap;
+
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+
+  transition: 0.3s;
+}
+
+
+.btn-carrusel a:hover {
+  background: #e68900;
+}
+
+
+/* =========================================
+   ANIMACIÓN
+========================================= */
+
+@keyframes carrusel {
+
+  0%,
+  25% {
+    transform: translateX(0);
+  }
+
+  33%,
+  58% {
+    transform: translateX(-33.333333%);
+  }
+
+  66%,
+  91% {
+    transform: translateX(-66.666666%);
+  }
+
+  100% {
+    transform: translateX(0);
+  }
+}
+
+
+/* =========================================
+   NOSOTROS
+========================================= */
+
+.nosotros {
+  padding: 80px 10%;
+
+  text-align: center;
+
+  background: white;
+}
+
+
+.nosotros h2 {
+  color: #0066b3;
+
+  font-size: 2.5rem;
+
+  margin-bottom: 20px;
+}
+
+
+.nosotros p {
+  max-width: 900px;
+
+  margin: auto;
+
+  line-height: 1.8;
+
+  color: #555;
+
+  font-size: 18px;
+}
+
+
+/* =========================================
+   BENEFICIOS
+========================================= */
+
+.beneficios {
+  padding: 80px 10%;
+
+  background: #eef6ff;
+}
+
+
+.beneficios h2 {
+  text-align: center;
+
+  color: #0066b3;
+
+  font-size: 2.5rem;
+
+  margin-bottom: 50px;
+}
+
+
+.contenedor-beneficios {
+  display: flex;
+
+  justify-content: center;
+
+  flex-wrap: wrap;
+
+  gap: 30px;
+}
+
+
+.card {
+  width: 320px;
+
+  padding: 30px;
+
+  background: white;
+
+  border-radius: 15px;
+
+  text-align: center;
+
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+
+.card h3 {
+  color: #ff9800;
+
+  margin-bottom: 15px;
+}
+
+
+.card p {
+  color: #555;
+
+  line-height: 1.6;
+}
+
+
+/* =========================================
+   CONTACTO
+========================================= */
+
+.contacto {
+  padding: 80px 10%;
+
+  background: white;
+}
+
+
+.contacto h2 {
+  text-align: center;
+
+  color: #0066b3;
+
+  font-size: 2.5rem;
+
+  margin-bottom: 30px;
+}
+
+
+form {
+  max-width: 700px;
+
+  margin: auto;
+}
+
+
+form input,
+form textarea {
+  width: 100%;
+
+  padding: 15px;
+
+  margin-bottom: 15px;
+
+  border: 2px solid #dbe8f8;
+
+  border-radius: 8px;
+
+  font-size: 16px;
+}
+
+
+form textarea {
+  height: 150px;
+
+  resize: none;
+}
+
+
+form button {
+  width: 100%;
+
+  padding: 15px;
+
+  border: none;
+
+  background: #ff9800;
+
+  color: white;
+
+  font-size: 18px;
+
+  font-weight: bold;
+
+  border-radius: 8px;
+
+  cursor: pointer;
+}
+
+
+form button:hover {
+  background: #e68900;
+}
+
+
+/* =========================================
+   FOOTER
+========================================= */
+
+footer {
+  background: #0066b3;
+
+  color: white;
+
+  text-align: center;
+
+  padding: 25px;
+}
+
+
+/* =========================================
+   RESPONSIVE
+========================================= */
+
+@media (max-width: 900px) {
+
+  .marca .logo {
+    width: 75px;
+    height: 75px;
+  }
+
+  .texto-marca h1 {
+    font-size: 25px;
+  }
+
+  .texto-marca p {
+    font-size: 9px;
+  }
+
+  nav {
+    padding-right: 15px;
+  }
+
+  nav ul {
+    gap: 18px;
+  }
+
+  nav ul li a {
+    font-size: 15px;
+  }
+}
+
+
+@media (max-width: 700px) {
+
+  .header-inicio {
+    position: relative;
+
+    height: auto;
+  }
+
+
+  .container-header {
+    height: auto;
+
+    min-height: 120px;
+
+    padding: 10px 15px 10px 0;
+
+    flex-direction: column;
+
+    align-items: flex-start;
+
+    justify-content: center;
+
+    gap: 10px;
+  }
+
+
+  .marca {
+    align-self: flex-start;
+  }
+
+
+  .marca .logo {
+    width: 65px;
+    height: 65px;
+  }
+
+
+  .texto-marca h1 {
+    font-size: 23px;
+  }
+
+
+  .texto-marca p {
+    font-size: 8px;
+  }
+
+
+  nav {
+    width: 100%;
+
+    padding: 0;
+  }
+
+
+  nav ul {
+    width: 100%;
+
+    justify-content: center;
+
+    flex-wrap: wrap;
+
+    gap: 10px;
+  }
+
+
+  nav ul li a {
+    font-size: 13px;
+  }
+
+
+  .slider {
+    width: 100%;
+
+    height: 60vh;
+
+    min-height: 400px;
+
+    margin-top: 0;
+  }
+
+
+  .btn-carrusel {
+    bottom: 30px;
+  }
+
+
+  .btn-carrusel a {
+    font-size: 17px;
+
+    padding: 13px 25px;
+  }
+
+
+  .nosotros,
+  .beneficios,
+  .contacto {
+    padding: 60px 7%;
+  }
+
+
+  .nosotros h2,
+  .beneficios h2,
+  .contacto h2 {
+    font-size: 2rem;
+  }
+}

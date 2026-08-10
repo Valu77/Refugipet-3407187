@@ -1,0 +1,690 @@
+/* =========================================
+   CONFIGURACIÓN GENERAL
+========================================= */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Segoe UI", sans-serif;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: #f8fbff;
+  color: #333;
+}
+
+
+/* =========================================
+   HEADER
+========================================= */
+
+.principal-header {
+  width: 100%;
+  height: 95px;
+
+  background: #0066b3;
+
+  position: fixed;
+  top: 0;
+  left: 0;
+
+  z-index: 1000;
+
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+
+.principal-container {
+  width: 100%;
+  height: 95px;
+
+  margin: 0;
+
+  padding: 8px 20px 8px 10px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+}
+
+
+/* =========================================
+   LOGO + REFUGIOPET
+========================================= */
+
+.principal-marca {
+  display: flex;
+
+  align-items: center;
+
+  gap: 3px;
+
+  margin: 0;
+
+  padding: 0;
+
+  flex-shrink: 0;
+}
+
+
+/* LOGO */
+
+.principal-logo {
+  width: 75px;
+  height: 75px;
+
+  object-fit: contain;
+
+  display: block;
+
+  margin: 0;
+}
+
+
+/* CONTENEDOR DEL TEXTO */
+
+.principal-marca > div {
+  display: flex;
+
+  flex-direction: column;
+
+  justify-content: center;
+
+  margin: 0;
+
+  padding: 0;
+}
+
+
+/* NOMBRE */
+
+.principal-marca h1 {
+  color: white;
+
+  font-size: 28px;
+
+  font-weight: 800;
+
+  line-height: 1;
+
+  margin: 0 0 5px 0;
+
+  padding: 0;
+}
+
+
+/* FRASE */
+
+.principal-marca p {
+  color: white;
+
+  font-size: 10px;
+
+  font-weight: 600;
+
+  line-height: 1.2;
+
+  white-space: nowrap;
+
+  margin: 0;
+
+  padding: 0;
+}
+
+
+/* =========================================
+   MENÚ
+========================================= */
+
+.principal-nav {
+  display: flex;
+
+  align-items: center;
+
+  gap: 25px;
+
+  margin: 0;
+}
+
+
+.principal-nav a {
+  color: white;
+
+  text-decoration: none;
+
+  font-size: 18px;
+
+  font-weight: 700;
+
+  transition: 0.3s;
+}
+
+
+.principal-nav a:hover {
+  color: #ff9800;
+}
+
+
+/* =========================================
+   BIENVENIDA
+========================================= */
+
+.bienvenida-principal {
+  min-height: 550px;
+
+  padding: 95px 10% 60px;
+
+  display: flex;
+
+  justify-content: center;
+
+  align-items: center;
+
+  text-align: center;
+
+  background: #eef6ff;
+}
+
+
+.bienvenida-contenido {
+  max-width: 850px;
+}
+
+
+.bienvenida-contenido h2 {
+  color: #0066b3;
+
+  font-size: 45px;
+
+  margin-bottom: 20px;
+}
+
+
+.bienvenida-contenido p {
+  color: #555;
+
+  font-size: 19px;
+
+  line-height: 1.8;
+
+  margin-bottom: 30px;
+}
+
+
+/* =========================================
+   BOTÓN PRINCIPAL
+========================================= */
+
+.boton-principal {
+  display: inline-block;
+
+  background: #ff9800;
+
+  color: white;
+
+  text-decoration: none;
+
+  padding: 15px 35px;
+
+  border-radius: 9px;
+
+  font-size: 18px;
+
+  font-weight: bold;
+
+  transition: 0.3s;
+
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+
+.boton-principal:hover {
+  background: #e68900;
+
+  transform: translateY(-3px);
+}
+
+
+/* =========================================
+   MASCOTAS
+========================================= */
+
+.mascotas {
+  padding: 80px 8%;
+
+  background: white;
+
+  text-align: center;
+}
+
+
+.mascotas h2 {
+  color: #0066b3;
+
+  font-size: 36px;
+
+  margin-bottom: 12px;
+}
+
+
+.texto-mascotas {
+  color: #666;
+
+  font-size: 18px;
+
+  margin-bottom: 45px;
+}
+
+
+/* =========================================
+   CONTENEDOR DE MASCOTAS
+========================================= */
+
+.contenedor-mascotas {
+  display: flex;
+
+  justify-content: center;
+
+  flex-wrap: wrap;
+
+  gap: 30px;
+}
+
+
+/* =========================================
+   TARJETAS
+========================================= */
+
+.mascota-card {
+  width: 270px;
+
+  background: white;
+
+  border-radius: 15px;
+
+  overflow: hidden;
+
+  box-shadow:
+    0 5px 18px rgba(0, 0, 0, 0.12);
+
+  transition: 0.3s;
+}
+
+
+.mascota-card:hover {
+  transform: translateY(-7px);
+
+  box-shadow:
+    0 10px 25px rgba(0, 0, 0, 0.18);
+}
+
+
+/* =========================================
+   IMAGEN DE MASCOTA
+========================================= */
+
+.mascota-imagen {
+  width: 100%;
+
+  height: 220px;
+
+  background: #dceeff;
+
+  display: flex;
+
+  justify-content: center;
+
+  align-items: center;
+
+  font-size: 100px;
+}
+
+
+/* =========================================
+   INFORMACIÓN DE MASCOTA
+========================================= */
+
+.mascota-info {
+  padding: 25px;
+}
+
+
+.mascota-info h3 {
+  color: #0066b3;
+
+  font-size: 25px;
+
+  margin-bottom: 8px;
+}
+
+
+.mascota-info p {
+  color: #666;
+
+  margin-bottom: 20px;
+}
+
+
+/* BOTÓN */
+
+.mascota-info button {
+  border: none;
+
+  background: #ff9800;
+
+  color: white;
+
+  padding: 11px 20px;
+
+  border-radius: 8px;
+
+  font-size: 15px;
+
+  font-weight: bold;
+
+  cursor: pointer;
+
+  transition: 0.3s;
+}
+
+
+.mascota-info button:hover {
+  background: #e68900;
+}
+
+
+/* =========================================
+   SECCIÓN ADOPCIÓN
+========================================= */
+
+.seccion-adopcion {
+  padding: 80px 10%;
+
+  text-align: center;
+
+  background: #eef6ff;
+}
+
+
+.seccion-adopcion h2 {
+  color: #0066b3;
+
+  font-size: 35px;
+
+  margin-bottom: 20px;
+}
+
+
+.seccion-adopcion p {
+  max-width: 750px;
+
+  margin: 0 auto 30px;
+
+  color: #555;
+
+  font-size: 18px;
+
+  line-height: 1.7;
+}
+
+
+.seccion-adopcion button {
+  border: none;
+
+  background: #ff9800;
+
+  color: white;
+
+  padding: 14px 30px;
+
+  border-radius: 8px;
+
+  font-size: 17px;
+
+  font-weight: bold;
+
+  cursor: pointer;
+
+  transition: 0.3s;
+}
+
+
+.seccion-adopcion button:hover {
+  background: #e68900;
+}
+
+
+/* =========================================
+   CONTACTO
+========================================= */
+
+.contacto-principal {
+  padding: 80px 10%;
+
+  text-align: center;
+
+  background: white;
+}
+
+
+.contacto-principal h2 {
+  color: #0066b3;
+
+  font-size: 35px;
+
+  margin-bottom: 20px;
+}
+
+
+.contacto-principal p {
+  color: #555;
+
+  font-size: 18px;
+
+  margin-bottom: 25px;
+}
+
+
+.contacto-principal button {
+  border: none;
+
+  background: #0066b3;
+
+  color: white;
+
+  padding: 14px 30px;
+
+  border-radius: 8px;
+
+  font-size: 17px;
+
+  font-weight: bold;
+
+  cursor: pointer;
+
+  transition: 0.3s;
+}
+
+
+.contacto-principal button:hover {
+  background: #00528f;
+}
+
+
+/* =========================================
+   FOOTER
+========================================= */
+
+.principal-footer {
+  background: #0066b3;
+
+  color: white;
+
+  text-align: center;
+
+  padding: 25px;
+}
+
+
+/* =========================================
+   TABLET
+========================================= */
+
+@media (max-width: 1000px) {
+
+  .principal-container {
+    padding: 8px 10px;
+  }
+
+  .principal-nav {
+    gap: 15px;
+  }
+
+  .principal-nav a {
+    font-size: 15px;
+  }
+
+  .principal-logo {
+    width: 65px;
+    height: 65px;
+  }
+
+  .principal-marca h1 {
+    font-size: 24px;
+  }
+
+  .principal-marca p {
+    font-size: 8px;
+  }
+}
+
+
+/* =========================================
+   CELULAR
+========================================= */
+
+@media (max-width: 700px) {
+
+  .principal-header {
+    height: auto;
+
+    position: relative;
+  }
+
+
+  .principal-container {
+    height: auto;
+
+    min-height: 120px;
+
+    padding: 12px;
+
+    flex-direction: column;
+
+    gap: 15px;
+  }
+
+
+  .principal-marca {
+    justify-content: flex-start;
+
+    align-self: flex-start;
+  }
+
+
+  .principal-nav {
+    width: 100%;
+
+    flex-wrap: wrap;
+
+    justify-content: center;
+
+    gap: 12px;
+
+    padding-bottom: 5px;
+  }
+
+
+  .principal-nav a {
+    font-size: 14px;
+  }
+
+
+  .bienvenida-principal {
+    min-height: 500px;
+
+    padding: 60px 7%;
+  }
+
+
+  .bienvenida-contenido h2 {
+    font-size: 34px;
+  }
+
+
+  .bienvenida-contenido p {
+    font-size: 17px;
+  }
+
+
+  .mascotas {
+    padding: 60px 6%;
+  }
+
+
+  .mascotas h2 {
+    font-size: 29px;
+  }
+}
+
+
+/* =========================================
+   CELULAR PEQUEÑO
+========================================= */
+
+@media (max-width: 450px) {
+
+  .principal-logo {
+    width: 60px;
+    height: 60px;
+  }
+
+
+  .principal-marca h1 {
+    font-size: 21px;
+  }
+
+
+  .principal-marca p {
+    font-size: 7px;
+  }
+
+
+  .principal-nav {
+    gap: 9px;
+  }
+
+
+  .principal-nav a {
+    font-size: 13px;
+  }
+
+
+  .bienvenida-contenido h2 {
+    font-size: 29px;
+  }
+
+
+  .mascota-card {
+    width: 100%;
+
+    max-width: 320px;
+  }
+}

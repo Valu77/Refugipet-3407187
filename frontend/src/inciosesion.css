@@ -1,0 +1,337 @@
+/* =========================================
+   CONFIGURACIÓN GENERAL
+========================================= */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Segoe UI", sans-serif;
+}
+
+body {
+  margin: 0;
+  background: #f4f9ff;
+}
+
+
+/* =========================================
+   CONTENEDOR PRINCIPAL
+========================================= */
+
+.login-container {
+  min-height: 100vh;
+  width: 100%;
+
+  display: flex;
+  flex-direction: column;
+
+  align-items: center;
+  justify-content: center;
+
+  padding: 40px 20px;
+
+  background: linear-gradient(
+    135deg,
+    #eef7ff,
+    #ffffff
+  );
+}
+
+
+/* =========================================
+   LOGO
+========================================= */
+
+.login-logo {
+  display: flex;
+
+  justify-content: center;
+  align-items: center;
+
+  margin-bottom: 15px;
+}
+
+.login-logo img {
+  width: 110px;
+  height: 110px;
+
+  object-fit: contain;
+
+  display: block;
+}
+
+
+/* =========================================
+   TARJETA
+========================================= */
+
+.login-card {
+  width: 100%;
+  max-width: 450px;
+
+  background: white;
+
+  padding: 40px;
+
+  border-radius: 18px;
+
+  box-shadow:
+    0 8px 30px rgba(0, 0, 0, 0.12);
+
+  text-align: center;
+}
+
+
+/* =========================================
+   TÍTULO
+========================================= */
+
+.login-card h1 {
+  color: #0066b3;
+
+  font-size: 32px;
+
+  margin-bottom: 10px;
+}
+
+
+/* SUBTÍTULO */
+
+.login-subtitle {
+  color: #666;
+
+  font-size: 16px;
+
+  margin-bottom: 30px;
+}
+
+
+/* =========================================
+   FORMULARIO
+========================================= */
+
+.login-form {
+  width: 100%;
+
+  display: flex;
+  flex-direction: column;
+
+  text-align: left;
+}
+
+
+/* =========================================
+   INPUTS
+========================================= */
+
+.input-group {
+  width: 100%;
+
+  margin-bottom: 20px;
+}
+
+.input-group label {
+  display: block;
+
+  color: #333;
+
+  font-size: 15px;
+
+  font-weight: 600;
+
+  margin-bottom: 7px;
+}
+
+.input-group input[type="email"],
+.input-group input[type="password"] {
+  width: 100%;
+
+  height: 48px;
+
+  padding: 12px 15px;
+
+  border: 2px solid #dbe8f8;
+
+  border-radius: 8px;
+
+  outline: none;
+
+  font-size: 15px;
+
+  color: #333;
+
+  transition: 0.3s;
+}
+
+.input-group input[type="email"]:focus,
+.input-group input[type="password"]:focus {
+  border-color: #0066b3;
+
+  box-shadow:
+    0 0 0 3px rgba(0, 102, 179, 0.1);
+}
+
+
+/* =========================================
+   OPCIONES
+========================================= */
+
+.login-options {
+  width: 100%;
+
+  display: flex;
+
+  justify-content: space-between;
+
+  align-items: center;
+
+  margin-bottom: 25px;
+
+  font-size: 13px;
+}
+
+.login-options label {
+  display: flex;
+
+  align-items: center;
+
+  gap: 6px;
+
+  color: #555;
+}
+
+.login-options input[type="checkbox"] {
+  accent-color: #0066b3;
+}
+
+.login-options a {
+  color: #0066b3;
+
+  text-decoration: none;
+
+  font-weight: 600;
+}
+
+.login-options a:hover {
+  color: #ff9800;
+}
+
+
+/* =========================================
+   BOTÓN
+========================================= */
+
+.login-button {
+  width: 100%;
+
+  height: 50px;
+
+  border: none;
+
+  border-radius: 8px;
+
+  background: #ff9800;
+
+  color: white;
+
+  font-size: 17px;
+
+  font-weight: bold;
+
+  cursor: pointer;
+
+  transition: 0.3s;
+}
+
+.login-button:hover {
+  background: #e68900;
+
+  transform: translateY(-2px);
+
+  box-shadow:
+    0 5px 12px rgba(0, 0, 0, 0.18);
+}
+
+
+/* =========================================
+   REGISTRO
+========================================= */
+
+.register-text {
+  margin-top: 25px;
+
+  color: #666;
+
+  font-size: 14px;
+}
+
+.register-text a {
+  color: #0066b3;
+
+  text-decoration: none;
+
+  font-weight: bold;
+}
+
+.register-text a:hover {
+  color: #ff9800;
+}
+
+
+/* =========================================
+   VOLVER AL INICIO
+========================================= */
+
+.back-home {
+  display: inline-block;
+
+  margin-top: 20px;
+
+  color: #0066b3;
+
+  text-decoration: none;
+
+  font-size: 14px;
+
+  font-weight: 600;
+}
+
+.back-home:hover {
+  color: #ff9800;
+}
+
+
+/* =========================================
+   RESPONSIVE
+========================================= */
+
+@media (max-width: 600px) {
+
+  .login-container {
+    padding: 30px 15px;
+  }
+
+  .login-logo img {
+    width: 90px;
+    height: 90px;
+  }
+
+  .login-card {
+    max-width: 100%;
+
+    padding: 30px 25px;
+  }
+
+  .login-card h1 {
+    font-size: 28px;
+  }
+
+  .login-options {
+    flex-direction: column;
+
+    align-items: flex-start;
+
+    gap: 10px;
+  }
+}
