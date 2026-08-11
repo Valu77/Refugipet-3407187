@@ -20,7 +20,7 @@ function Inicio() {
 
             <img
               src={logo}
-              alt="Logo RefugioPet"
+              alt="Logo Refugipet"
               className="logo"
             />
 

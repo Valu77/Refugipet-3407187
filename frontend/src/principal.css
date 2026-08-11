@@ -1,5 +1,5 @@
 /* =========================================
-   CONFIGURACIÓN GENERAL
+CONFIGURACIÓN GENERAL
 ========================================= */
 
 * {
@@ -20,12 +20,12 @@ body {
 
 
 /* =========================================
-   HEADER
+HEADER
 ========================================= */
 
 .principal-header {
   width: 100%;
-  height: 95px;
+  height: 105px;
 
   background: #0066b3;
 
@@ -39,120 +39,100 @@ body {
 }
 
 
+/* =========================================
+CONTENEDOR HEADER
+========================================= */
+
 .principal-container {
   width: 100%;
-  height: 95px;
+  height: 105px;
 
-  margin: 0;
-
-  padding: 8px 20px 8px 10px;
+  padding: 0;
 
   display: flex;
-
   align-items: center;
-
   justify-content: space-between;
 }
 
 
 /* =========================================
-   LOGO + REFUGIOPET
+LOGO + REFUGIOPET
 ========================================= */
 
 .principal-marca {
   display: flex;
+  align-items: stretch;
 
-  align-items: center;
+  height: 105px;
 
-  gap: 3px;
-
-  margin: 0;
-
-  padding: 0;
+  gap: 5px;
 
   flex-shrink: 0;
 }
 
 
-/* LOGO */
+/* =========================================
+LOGO DE ARRIBA A ABAJO
+========================================= */
 
 .principal-logo {
-  width: 75px;
-  height: 75px;
+  width: 105px;
+  height: 105px;
 
-  object-fit: contain;
+  object-fit: cover;
 
   display: block;
 
   margin: 0;
-}
-
-
-/* CONTENEDOR DEL TEXTO */
-
-.principal-marca > div {
-  display: flex;
-
-  flex-direction: column;
-
-  justify-content: center;
-
-  margin: 0;
-
-  padding: 0;
-}
-
-
-/* NOMBRE */
-
-.principal-marca h1 {
-  color: white;
-
-  font-size: 28px;
-
-  font-weight: 800;
-
-  line-height: 1;
-
-  margin: 0 0 5px 0;
-
-  padding: 0;
-}
-
-
-/* FRASE */
-
-.principal-marca p {
-  color: white;
-
-  font-size: 10px;
-
-  font-weight: 600;
-
-  line-height: 1.2;
-
-  white-space: nowrap;
-
-  margin: 0;
-
   padding: 0;
 }
 
 
 /* =========================================
-   MENÚ
+TEXTO REFUGIOPET
+========================================= */
+
+.principal-marca > div {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.principal-marca h1 {
+  color: white;
+
+  font-size: 28px;
+  font-weight: 800;
+
+  line-height: 1;
+
+  margin: 0 0 5px 0;
+}
+
+.principal-marca p {
+  color: white;
+
+  font-size: 10px;
+  font-weight: 600;
+
+  line-height: 1.2;
+
+  white-space: nowrap;
+}
+
+
+/* =========================================
+MENÚ
 ========================================= */
 
 .principal-nav {
   display: flex;
-
   align-items: center;
 
   gap: 25px;
 
-  margin: 0;
+  padding-right: 25px;
 }
-
 
 .principal-nav a {
   color: white;
@@ -160,12 +140,10 @@ body {
   text-decoration: none;
 
   font-size: 18px;
-
   font-weight: 700;
 
   transition: 0.3s;
 }
-
 
 .principal-nav a:hover {
   color: #ff9800;
@@ -173,18 +151,17 @@ body {
 
 
 /* =========================================
-   BIENVENIDA
+BIENVENIDA
 ========================================= */
 
 .bienvenida-principal {
-  min-height: 550px;
+  min-height: 430px;
 
-  padding: 95px 10% 60px;
+  padding: 140px 10% 70px;
 
   display: flex;
 
   justify-content: center;
-
   align-items: center;
 
   text-align: center;
@@ -192,11 +169,9 @@ body {
   background: #eef6ff;
 }
 
-
 .bienvenida-contenido {
   max-width: 850px;
 }
-
 
 .bienvenida-contenido h2 {
   color: #0066b3;
@@ -206,7 +181,6 @@ body {
   margin-bottom: 20px;
 }
 
-
 .bienvenida-contenido p {
   color: #555;
 
@@ -214,46 +188,14 @@ body {
 
   line-height: 1.8;
 
-  margin-bottom: 30px;
+  max-width: 750px;
+
+  margin: 0 auto;
 }
 
 
 /* =========================================
-   BOTÓN PRINCIPAL
-========================================= */
-
-.boton-principal {
-  display: inline-block;
-
-  background: #ff9800;
-
-  color: white;
-
-  text-decoration: none;
-
-  padding: 15px 35px;
-
-  border-radius: 9px;
-
-  font-size: 18px;
-
-  font-weight: bold;
-
-  transition: 0.3s;
-
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-}
-
-
-.boton-principal:hover {
-  background: #e68900;
-
-  transform: translateY(-3px);
-}
-
-
-/* =========================================
-   MASCOTAS
+MASCOTAS
 ========================================= */
 
 .mascotas {
@@ -264,7 +206,6 @@ body {
   text-align: center;
 }
 
-
 .mascotas h2 {
   color: #0066b3;
 
@@ -272,7 +213,6 @@ body {
 
   margin-bottom: 12px;
 }
-
 
 .texto-mascotas {
   color: #666;
@@ -284,7 +224,7 @@ body {
 
 
 /* =========================================
-   CONTENEDOR DE MASCOTAS
+CONTENEDOR DE MASCOTAS
 ========================================= */
 
 .contenedor-mascotas {
@@ -295,11 +235,15 @@ body {
   flex-wrap: wrap;
 
   gap: 30px;
+
+  max-width: 1200px;
+
+  margin: 0 auto;
 }
 
 
 /* =========================================
-   TARJETAS
+TARJETAS
 ========================================= */
 
 .mascota-card {
@@ -317,7 +261,6 @@ body {
   transition: 0.3s;
 }
 
-
 .mascota-card:hover {
   transform: translateY(-7px);
 
@@ -327,7 +270,7 @@ body {
 
 
 /* =========================================
-   IMAGEN DE MASCOTA
+IMAGEN DE MASCOTA
 ========================================= */
 
 .mascota-imagen {
@@ -340,7 +283,6 @@ body {
   display: flex;
 
   justify-content: center;
-
   align-items: center;
 
   font-size: 100px;
@@ -348,13 +290,12 @@ body {
 
 
 /* =========================================
-   INFORMACIÓN DE MASCOTA
+INFORMACIÓN DE MASCOTA
 ========================================= */
 
 .mascota-info {
   padding: 25px;
 }
-
 
 .mascota-info h3 {
   color: #0066b3;
@@ -364,7 +305,6 @@ body {
   margin-bottom: 8px;
 }
 
-
 .mascota-info p {
   color: #666;
 
@@ -372,14 +312,20 @@ body {
 }
 
 
-/* BOTÓN */
+/* =========================================
+BOTÓN VER INFORMACIÓN
+========================================= */
 
-.mascota-info button {
+.boton-mascota {
+  display: inline-block;
+
   border: none;
 
   background: #ff9800;
 
   color: white;
+
+  text-decoration: none;
 
   padding: 11px 20px;
 
@@ -394,14 +340,50 @@ body {
   transition: 0.3s;
 }
 
-
-.mascota-info button:hover {
+.boton-mascota:hover {
   background: #e68900;
+
+  transform: translateY(-2px);
 }
 
 
 /* =========================================
-   SECCIÓN ADOPCIÓN
+BOTÓN VER TODAS LAS MASCOTAS
+========================================= */
+
+.boton-ver-mascotas {
+  margin-top: 40px;
+}
+
+.boton-ver-mascotas a {
+  display: inline-block;
+
+  background: #0066b3;
+
+  color: white;
+
+  text-decoration: none;
+
+  padding: 13px 28px;
+
+  border-radius: 8px;
+
+  font-size: 16px;
+
+  font-weight: bold;
+
+  transition: 0.3s;
+}
+
+.boton-ver-mascotas a:hover {
+  background: #00528f;
+
+  transform: translateY(-2px);
+}
+
+
+/* =========================================
+SECCIÓN ADOPCIÓN
 ========================================= */
 
 .seccion-adopcion {
@@ -412,7 +394,6 @@ body {
   background: #eef6ff;
 }
 
-
 .seccion-adopcion h2 {
   color: #0066b3;
 
@@ -420,7 +401,6 @@ body {
 
   margin-bottom: 20px;
 }
-
 
 .seccion-adopcion p {
   max-width: 750px;
@@ -435,12 +415,18 @@ body {
 }
 
 
-.seccion-adopcion button {
-  border: none;
+/* =========================================
+BOTÓN ADOPCIÓN
+========================================= */
+
+.boton-adopcion {
+  display: inline-block;
 
   background: #ff9800;
 
   color: white;
+
+  text-decoration: none;
 
   padding: 14px 30px;
 
@@ -450,19 +436,18 @@ body {
 
   font-weight: bold;
 
-  cursor: pointer;
-
   transition: 0.3s;
 }
 
-
-.seccion-adopcion button:hover {
+.boton-adopcion:hover {
   background: #e68900;
+
+  transform: translateY(-3px);
 }
 
 
 /* =========================================
-   CONTACTO
+CONTACTO
 ========================================= */
 
 .contacto-principal {
@@ -473,7 +458,6 @@ body {
   background: white;
 }
 
-
 .contacto-principal h2 {
   color: #0066b3;
 
@@ -482,7 +466,6 @@ body {
   margin-bottom: 20px;
 }
 
-
 .contacto-principal p {
   color: #555;
 
@@ -490,7 +473,6 @@ body {
 
   margin-bottom: 25px;
 }
-
 
 .contacto-principal button {
   border: none;
@@ -512,14 +494,15 @@ body {
   transition: 0.3s;
 }
 
-
 .contacto-principal button:hover {
   background: #00528f;
+
+  transform: translateY(-2px);
 }
 
 
 /* =========================================
-   FOOTER
+FOOTER
 ========================================= */
 
 .principal-footer {
@@ -532,28 +515,37 @@ body {
   padding: 25px;
 }
 
+.principal-footer p {
+  font-size: 14px;
+}
+
 
 /* =========================================
-   TABLET
+TABLET
 ========================================= */
 
 @media (max-width: 1000px) {
 
   .principal-container {
-    padding: 8px 10px;
+    padding: 0;
+  }
+
+  .principal-marca {
+    height: 105px;
+  }
+
+  .principal-logo {
+    width: 105px;
+    height: 105px;
   }
 
   .principal-nav {
     gap: 15px;
+    padding-right: 15px;
   }
 
   .principal-nav a {
     font-size: 15px;
-  }
-
-  .principal-logo {
-    width: 65px;
-    height: 65px;
   }
 
   .principal-marca h1 {
@@ -563,11 +555,15 @@ body {
   .principal-marca p {
     font-size: 8px;
   }
+
+  .mascota-card {
+    width: 250px;
+  }
 }
 
 
 /* =========================================
-   CELULAR
+CELULAR
 ========================================= */
 
 @media (max-width: 700px) {
@@ -577,7 +573,6 @@ body {
 
     position: relative;
   }
-
 
   .principal-container {
     height: auto;
@@ -591,13 +586,20 @@ body {
     gap: 15px;
   }
 
-
   .principal-marca {
+    height: 70px;
+
     justify-content: flex-start;
 
     align-self: flex-start;
   }
 
+  .principal-logo {
+    width: 70px;
+    height: 70px;
+
+    object-fit: cover;
+  }
 
   .principal-nav {
     width: 100%;
@@ -611,42 +613,59 @@ body {
     padding-bottom: 5px;
   }
 
-
   .principal-nav a {
     font-size: 14px;
   }
 
-
   .bienvenida-principal {
-    min-height: 500px;
+    min-height: 450px;
 
     padding: 60px 7%;
   }
-
 
   .bienvenida-contenido h2 {
     font-size: 34px;
   }
 
-
   .bienvenida-contenido p {
     font-size: 17px;
   }
-
 
   .mascotas {
     padding: 60px 6%;
   }
 
-
   .mascotas h2 {
+    font-size: 29px;
+  }
+
+  .texto-mascotas {
+    font-size: 16px;
+  }
+
+  .contenedor-mascotas {
+    gap: 25px;
+  }
+
+  .mascota-card {
+    width: 100%;
+    max-width: 320px;
+  }
+
+  .seccion-adopcion,
+  .contacto-principal {
+    padding: 60px 7%;
+  }
+
+  .seccion-adopcion h2,
+  .contacto-principal h2 {
     font-size: 29px;
   }
 }
 
 
 /* =========================================
-   CELULAR PEQUEÑO
+CELULAR PEQUEÑO
 ========================================= */
 
 @media (max-width: 450px) {
@@ -656,35 +675,47 @@ body {
     height: 60px;
   }
 
+  .principal-marca {
+    height: 60px;
+  }
 
   .principal-marca h1 {
     font-size: 21px;
   }
 
-
   .principal-marca p {
     font-size: 7px;
   }
-
 
   .principal-nav {
     gap: 9px;
   }
 
-
   .principal-nav a {
     font-size: 13px;
   }
-
 
   .bienvenida-contenido h2 {
     font-size: 29px;
   }
 
+  .bienvenida-contenido p {
+    font-size: 15px;
+  }
 
   .mascota-card {
     width: 100%;
 
     max-width: 320px;
+  }
+
+  .mascota-imagen {
+    height: 210px;
+
+    font-size: 90px;
+  }
+
+  .mascota-info h3 {
+    font-size: 23px;
   }
 }

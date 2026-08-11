@@ -17,13 +17,15 @@ function Principal() {
 
             <img
               src={logo}
-              alt="Logo RefugioPet"
+              alt="Logo RefugiPet"
               className="principal-logo"
             />
 
             <div>
               <h1>RefugioPet</h1>
-              <p>Juntos construimos un hogar para cada mascota</p>
+              <p>
+                Juntos construimos un hogar para cada mascota
+              </p>
             </div>
 
           </div>
@@ -36,13 +38,13 @@ function Principal() {
               Inicio
             </Link>
 
-            <a href="#mascotas">
+            <Link to="/adopcion">
               Mascotas
-            </a>
+            </Link>
 
-            <a href="#adopcion">
+            <Link to="/adopcion">
               Adopción
-            </a>
+            </Link>
 
             <a href="#contacto">
               Contacto
@@ -59,9 +61,11 @@ function Principal() {
       </header>
 
 
-      {/* ================= BIENVENIDA ================= */}
+      {/* ================= CONTENIDO ================= */}
 
       <main>
+
+        {/* ================= BIENVENIDA ================= */}
 
         <section className="bienvenida-principal">
 
@@ -72,17 +76,11 @@ function Principal() {
             </h2>
 
             <p>
-              Gracias por ser parte de nuestra comunidad.
-              Aquí podrás encontrar mascotas que buscan
-              una familia y un hogar lleno de amor.
+              Nos alegra tenerte en nuestra comunidad.
+              Explora las mascotas disponibles y descubre
+              algunos de nuestros amigos que están esperando
+              encontrar una familia y un hogar lleno de amor.
             </p>
-
-            <a
-              href="#mascotas"
-              className="boton-principal"
-            >
-              Ver mascotas
-            </a>
 
           </div>
 
@@ -109,7 +107,7 @@ function Principal() {
           <div className="contenedor-mascotas">
 
 
-            {/* MASCOTA 1 */}
+            {/* ================= MAX ================= */}
 
             <div className="mascota-card">
 
@@ -119,22 +117,27 @@ function Principal() {
 
               <div className="mascota-info">
 
-                <h3>Max</h3>
+                <h3>
+                  Max
+                </h3>
 
                 <p>
                   Perro · 2 años
                 </p>
 
-                <button>
+                <Link
+                  to="/adopcion"
+                  className="boton-mascota"
+                >
                   Ver información
-                </button>
+                </Link>
 
               </div>
 
             </div>
 
 
-            {/* MASCOTA 2 */}
+            {/* ================= ROCKY ================= */}
 
             <div className="mascota-card">
 
@@ -144,22 +147,27 @@ function Principal() {
 
               <div className="mascota-info">
 
-                <h3>Rocky</h3>
+                <h3>
+                  Rocky
+                </h3>
 
                 <p>
                   Perro · 3 años
                 </p>
 
-                <button>
+                <Link
+                  to="/adopcion"
+                  className="boton-mascota"
+                >
                   Ver información
-                </button>
+                </Link>
 
               </div>
 
             </div>
 
 
-            {/* MASCOTA 3 */}
+            {/* ================= LUNA ================= */}
 
             <div className="mascota-card">
 
@@ -169,22 +177,27 @@ function Principal() {
 
               <div className="mascota-info">
 
-                <h3>Luna</h3>
+                <h3>
+                  Luna
+                </h3>
 
                 <p>
                   Gata · 1 año
                 </p>
 
-                <button>
+                <Link
+                  to="/adopcion"
+                  className="boton-mascota"
+                >
                   Ver información
-                </button>
+                </Link>
 
               </div>
 
             </div>
 
 
-            {/* MASCOTA 4 */}
+            {/* ================= BRUNO ================= */}
 
             <div className="mascota-card">
 
@@ -194,19 +207,36 @@ function Principal() {
 
               <div className="mascota-info">
 
-                <h3>Bruno</h3>
+                <h3>
+                  Bruno
+                </h3>
 
                 <p>
                   Perro · 4 años
                 </p>
 
-                <button>
+                <Link
+                  to="/adopcion"
+                  className="boton-mascota"
+                >
                   Ver información
-                </button>
+                </Link>
 
               </div>
 
             </div>
+
+
+          </div>
+
+
+          {/* BOTÓN PARA VER TODAS */}
+
+          <div className="boton-ver-mascotas">
+
+            <Link to="/adopcion">
+              Ver todas las mascotas
+            </Link>
 
           </div>
 
@@ -229,9 +259,12 @@ function Principal() {
             mascota que necesita amor, cuidado y un hogar.
           </p>
 
-          <button>
+          <Link
+            to="/adopcion"
+            className="boton-adopcion"
+          >
             Quiero adoptar
-          </button>
+          </Link>
 
         </section>
 
@@ -266,7 +299,7 @@ function Principal() {
       <footer className="principal-footer">
 
         <p>
-          © 2026 RefugioPet - Todos los derechos reservados
+          © 2026 RefugiPet - Todos los derechos reservados
         </p>
 
       </footer>
