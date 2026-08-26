@@ -5,6 +5,8 @@ import Iniciosesion from "./pages/iniciosesion";
 import Registrar from "./pages/registrar";
 import Principal from "./pages/principal";
 import Adopcion from "./pages/adopcion";
+import Contacto from "./pages/Contacto";
+import Admin from "./pages/admin/admin";
 
 function App() {
   return (
@@ -28,7 +30,11 @@ function App() {
 
         {/* Adopción */}
         <Route path="/adopcion" element={<Adopcion />} />
-
+        {/* Contacto */}
+        <Route path="/contacto" element={<Contacto />} />
+        {/* Admin */}
+        <Route path="/admin" element={<Admin />} />
+    
       </Routes>
     </BrowserRouter>
   );

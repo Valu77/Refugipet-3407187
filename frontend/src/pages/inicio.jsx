@@ -25,7 +25,7 @@ function Inicio() {
             />
 
             <div className="texto-marca">
-              <h1>RefugioPet</h1>
+              <h1>RefugiPet</h1>
 
               <p>
                 Juntos construimos un hogar para cada mascota
@@ -39,20 +39,17 @@ function Inicio() {
           <nav>
             <ul>
 
+              
+              
+
               <li>
-                <Link to="/">Inicio</Link>
+                <Link to="/iniciosesion">
+                  Adopción
+                </Link>
               </li>
 
               <li>
-                <a href="#">Adopción</a>
-              </li>
-
-              <li>
-                <a href="#">Contacto</a>
-              </li>
-
-              <li>
-                <Link to="/login">
+                <Link to="/iniciosesion">
                   Iniciar Sesión
                 </Link>
               </li>
@@ -97,13 +94,6 @@ function Inicio() {
             />
           </div>
 
-        </div>
-
-
-        <div className="btn-carrusel">
-          <Link to="#">
-            Ver Mascotas
-          </Link>
         </div>
 
       </section>
@@ -209,7 +199,7 @@ function Inicio() {
       <footer>
 
         <p>
-          © 2026 RefugioPet - Todos los derechos reservados
+          © 2026 RefugiPet - Todos los derechos reservados
         </p>
 
       </footer>

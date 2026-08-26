@@ -1,12 +1,11 @@
 /* =========================================
-   CONFIGURACIÓN GENERAL
+   REFUGIPET - PÁGINA DE ADOPCIÓN
 ========================================= */
 
 * {
+  box-sizing: border-box;
   margin: 0;
   padding: 0;
-  box-sizing: border-box;
-  font-family: "Segoe UI", sans-serif;
 }
 
 html {
@@ -14,44 +13,43 @@ html {
 }
 
 body {
-  background: #f8fbff;
-  color: #333;
-  width: 100%;
-  overflow-x: hidden;
+  margin: 0;
+  padding: 0;
+  background: #f4f8fc;
 }
-
-.adopcion-page {
-  width: 100%;
-  min-height: 100vh;
-  background: #f8fbff;
-}
-
 
 /* =========================================
-   BARRA SUPERIOR
+   PÁGINA
+========================================= */
+
+.adopcion-page {
+  min-height: 100vh;
+  background: #f4f8fc;
+  color: #333;
+  font-family: "Segoe UI", Arial, Helvetica, sans-serif;
+}
+
+/* =========================================
+   NAVBAR
 ========================================= */
 
 .adopcion-navbar {
-  width: 100%;
   height: 95px;
-
+  width: 100%;
   background: #0066b3;
-
-  position: fixed;
-  top: 0;
-  left: 0;
-
-  z-index: 1000;
 
   display: flex;
   align-items: center;
-  justify-content: space-between;
 
-  padding: 8px 20px 8px 10px;
+  padding: 0 20px 0 0;
+  gap: 30px;
 
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-}
 
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
 
 /* =========================================
    LOGO
@@ -65,30 +63,23 @@ body {
 
   gap: 3px;
 
+  text-decoration: none;
+  flex-shrink: 0;
+
   margin: 0;
   padding: 0;
-
-  text-decoration: none;
-
-  flex-shrink: 0;
 }
 
 .adopcion-logo-img {
- width: 110px;
-  height: 95px;
+  width: 85px;
+  height: 85px;
 
+  object-fit: contain;
   display: block;
 
-  margin-left: -20px;
+  margin: 0;
   padding: 0;
-
-  object-fit: cover;
 }
-
-
-/* =========================================
-   TEXTO DEL LOGO
-========================================= */
 
 .logo-texto {
   display: flex;
@@ -119,8 +110,8 @@ body {
   line-height: 1.2;
 
   white-space: nowrap;
+  margin: 0;
 }
-
 
 /* =========================================
    MENÚ
@@ -130,11 +121,11 @@ body {
   display: flex;
   align-items: center;
 
-  gap: 25px;
+  gap: 28px;
 
-  margin-left: auto;
-  margin-right: 30px;
+  flex: 1;
 
+  margin: 0;
   padding: 0;
 }
 
@@ -143,146 +134,89 @@ body {
 
   text-decoration: none;
 
-  font-size: 18px;
+  font-size: 17px;
   font-weight: 700;
 
-  white-space: nowrap;
-
   transition: 0.3s;
+
+  white-space: nowrap;
 }
 
 .adopcion-menu a:hover {
   color: #ff9800;
 }
 
-
-/* =========================================
-   CUENTA
-========================================= */
-
-.adopcion-cuenta {
-  display: flex;
-  align-items: center;
-
-  gap: 15px;
-
-  margin: 0;
-  padding: 0;
-}
-
-.adopcion-cuenta a {
-  color: white;
-
-  text-decoration: none;
-
-  font-size: 16px;
-  font-weight: 700;
-
-  white-space: nowrap;
-
-  transition: 0.3s;
-}
-
-.adopcion-cuenta a:hover {
-  color: #ff9800;
-}
-
-.adopcion-cuenta .registro-btn {
-  background: #ff9800;
-
-  color: white;
-
-  padding: 11px 18px;
-
-  border-radius: 8px;
-}
-
-.adopcion-cuenta .registro-btn:hover {
-  background: #e68900;
-  color: white;
-}
-
-
 /* =========================================
    CONTENIDO
 ========================================= */
 
 .adopcion-contenido {
-  width: 100%;
+  max-width: 1150px;
 
-  padding-top: 95px;
+  margin: auto;
+
+  background: white;
+
+  min-height: calc(100vh - 95px);
+
+  padding: 55px 55px 80px;
 }
 
-
 /* =========================================
-   INTRO
+   INTRODUCCIÓN
 ========================================= */
 
 .adopcion-intro {
-  width: 100%;
-
-  padding: 70px 8% 55px;
-
   text-align: center;
 
-  background: #eef6ff;
+  max-width: 720px;
+
+  margin: 0 auto 40px;
 }
 
 .adopcion-etiqueta {
-  display: inline-block;
+  color: #0874b9;
 
-  color: #0066b3;
+  font-size: 13px;
 
-  font-size: 14px;
-  font-weight: 800;
-
-  margin-bottom: 15px;
+  font-weight: bold;
 }
 
 .adopcion-intro h1 {
-  color: #0066b3;
+  color: #075f99;
 
-  font-size: 46px;
-  line-height: 1.2;
+  font-size: 40px;
 
-  margin-bottom: 20px;
+  margin: 12px 0;
 }
 
 .adopcion-intro h1 span {
-  color: #ff9800;
+  color: #ff9500;
 }
 
 .adopcion-intro p {
-  max-width: 750px;
+  color: #777;
 
-  margin: 0 auto;
+  font-size: 16px;
 
-  color: #555;
-
-  font-size: 18px;
-  line-height: 1.7;
+  line-height: 1.6;
 }
-
 
 /* =========================================
    FILTROS
 ========================================= */
 
 .filtros {
-  width: 100%;
-  max-width: 1250px;
+  background: #f4f8fc;
 
-  margin: 0 auto;
+  border: 1px solid #dce8f1;
 
-  padding: 35px 30px;
+  border-radius: 12px;
 
-  display: flex;
+  padding: 20px;
 
-  flex-direction: column;
-
-  gap: 20px;
+  margin-bottom: 45px;
 }
-
 
 /* =========================================
    BUSCADOR
@@ -290,25 +224,24 @@ body {
 
 .buscador {
   width: 100%;
+  height: 48px;
 
-  height: 52px;
+  background: white;
+
+  border: 1px solid #d4e0e9;
+
+  border-radius: 8px;
 
   display: flex;
   align-items: center;
 
-  background: white;
+  padding: 0 15px;
 
-  border: 2px solid #dbe8f8;
-
-  border-radius: 10px;
-
-  padding: 0 16px;
-
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+  margin-bottom: 15px;
 }
 
 .icono-busqueda {
-  font-size: 20px;
+  font-size: 17px;
 
   margin-right: 10px;
 }
@@ -316,184 +249,157 @@ body {
 .buscador input {
   width: 100%;
 
-  height: 100%;
-
   border: none;
-
   outline: none;
 
-  font-size: 16px;
+  font-size: 14px;
 
-  color: #333;
+  color: #444;
 }
 
 .buscador input::placeholder {
   color: #999;
 }
 
-
 /* =========================================
-   SELECTORES
+   SELECTS
 ========================================= */
 
 .filtros-select {
-  width: 100%;
+  display: grid;
 
-  display: flex;
+  grid-template-columns: 1fr 1fr 1fr auto;
 
-  align-items: center;
-
-  gap: 15px;
+  gap: 12px;
 }
 
 .filtros-select select {
-  flex: 1;
+  height: 45px;
 
-  height: 48px;
-
-  padding: 0 15px;
-
-  border: 2px solid #dbe8f8;
-
-  border-radius: 8px;
+  border: 1px solid #d4e0e9;
 
   background: white;
 
-  color: #444;
+  border-radius: 8px;
 
-  font-size: 15px;
+  padding: 0 12px;
+
+  color: #555;
 
   outline: none;
 
   cursor: pointer;
 }
 
+.filtros-select select:focus {
+  border-color: #0874b9;
+}
+
+/* =========================================
+   BOTÓN LIMPIAR
+========================================= */
+
 .limpiar-btn {
-  height: 48px;
-
-  padding: 0 25px;
-
   border: none;
 
-  border-radius: 8px;
-
-  background: #0066b3;
+  background: #0874b9;
 
   color: white;
 
-  font-size: 15px;
-  font-weight: bold;
+  border-radius: 8px;
+
+  padding: 0 18px;
 
   cursor: pointer;
 
-  transition: 0.3s;
+  font-weight: bold;
+
+  transition: 0.2s;
 }
 
 .limpiar-btn:hover {
-  background: #00528f;
+  background: #075f99;
 }
-
 
 /* =========================================
    RESULTADOS
 ========================================= */
 
-.resultados {
-  width: 100%;
-
-  padding: 25px 8% 80px;
-
-  background: white;
-}
-
 .resultados-header {
-  max-width: 1250px;
+  display: flex;
 
-  margin: 0 auto 35px;
+  justify-content: space-between;
+  align-items: center;
+
+  margin-bottom: 25px;
 }
 
 .resultados-header h2 {
-  color: #0066b3;
+  color: #075f99;
 
-  font-size: 32px;
-
-  margin-bottom: 5px;
+  font-size: 26px;
 }
 
 .resultados-header p {
-  color: #666;
+  color: #888;
 
-  font-size: 16px;
+  margin-top: 5px;
+
+  font-size: 14px;
 }
 
-
 /* =========================================
-   GRID
+   GRID DE MASCOTAS
 ========================================= */
 
 .mascotas-grid {
-  width: 100%;
-  max-width: 1250px;
-
-  margin: 0 auto;
-
   display: grid;
 
-  grid-template-columns:
-    repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(3, 1fr);
 
   gap: 30px;
 }
 
-
 /* =========================================
-   TARJETAS
+   TARJETA
 ========================================= */
 
 .mascota-card {
-  width: 100%;
-
   background: white;
 
   border-radius: 15px;
 
   overflow: hidden;
 
-  border: 1px solid #e4edf7;
+  box-shadow: 0 7px 20px rgba(0, 0, 0, 0.09);
 
-  box-shadow:
-    0 5px 18px rgba(0, 0, 0, 0.10);
+  border: 1px solid #eeeeee;
 
-  transition: 0.3s;
+  transition: 0.25s;
 }
 
 .mascota-card:hover {
-  transform: translateY(-6px);
+  transform: translateY(-5px);
 
-  box-shadow:
-    0 10px 25px rgba(0, 0, 0, 0.16);
+  box-shadow: 0 12px 25px rgba(0, 0, 0, 0.13);
 }
 
-
 /* =========================================
-   IMAGEN
+   IMAGEN DE LA MASCOTA
 ========================================= */
 
 .mascota-imagen {
+  width: 100%;
+  height: 220px;
+
+  background: #dceefd;
+
   position: relative;
 
-  width: 100%;
-  height: 230px;
-
-  background: #dceeff;
-
   overflow: hidden;
-
-  display: flex;
-
-  justify-content: center;
-  align-items: center;
 }
+
+/* IMAGEN REAL */
 
 .mascota-imagen img {
   width: 100%;
@@ -504,38 +410,19 @@ body {
   display: block;
 }
 
+/* POR SI TODAVÍA USAS EMOJI */
 
-/* ESPACIO PARA IMAGEN */
-
-.imagen-placeholder {
+.mascota-emoji {
   width: 100%;
   height: 100%;
 
   display: flex;
 
-  flex-direction: column;
-
   justify-content: center;
   align-items: center;
 
-  color: #0066b3;
-
-  background: #dceeff;
+  font-size: 105px;
 }
-
-.imagen-placeholder span {
-  font-size: 80px;
-}
-
-.imagen-placeholder p {
-  margin-top: 5px;
-
-  color: #0066b3;
-
-  font-size: 13px;
-  font-weight: 600;
-}
-
 
 /* =========================================
    DISPONIBLE
@@ -544,29 +431,30 @@ body {
 .disponible {
   position: absolute;
 
-  top: 15px;
-  right: 15px;
+  top: 12px;
+  left: 12px;
 
-  padding: 7px 12px;
-
-  border-radius: 20px;
-
-  background: #ff9800;
+  background: #20a35a;
 
   color: white;
 
-  font-size: 12px;
+  padding: 6px 11px;
+
+  border-radius: 20px;
+
+  font-size: 11px;
 
   font-weight: bold;
+
+  z-index: 2;
 }
 
-
 /* =========================================
-   INFORMACIÓN
+   INFORMACIÓN DE LA MASCOTA
 ========================================= */
 
 .mascota-info {
-  padding: 22px;
+  padding: 20px;
 }
 
 .nombre-mascota {
@@ -574,47 +462,37 @@ body {
 
   justify-content: space-between;
   align-items: center;
-
-  margin-bottom: 15px;
 }
 
 .nombre-mascota h3 {
-  color: #0066b3;
+  color: #0874b9;
 
-  font-size: 25px;
+  font-size: 24px;
 }
 
 .nombre-mascota span {
-  font-size: 20px;
+  font-size: 18px;
 }
 
-
 /* =========================================
-   DATOS
+   DATOS DE LA MASCOTA
 ========================================= */
 
 .datos-mascota {
   display: flex;
 
-  flex-wrap: wrap;
+  flex-direction: column;
 
-  gap: 10px;
+  gap: 7px;
 
-  margin-bottom: 20px;
+  margin: 12px 0 18px;
 }
 
 .datos-mascota span {
-  color: #666;
+  color: #777;
 
   font-size: 14px;
-
-  background: #f3f8fd;
-
-  padding: 7px 10px;
-
-  border-radius: 6px;
 }
-
 
 /* =========================================
    BOTÓN INFORMACIÓN
@@ -623,112 +501,108 @@ body {
 .informacion-btn {
   display: block;
 
-  width: 100%;
+  text-align: center;
+
+  background: #ff9500;
+
+  color: white;
+
+  text-decoration: none;
 
   padding: 12px;
 
   border-radius: 8px;
 
-  background: #ff9800;
+  font-size: 14px;
 
-  color: white;
-
-  text-align: center;
-
-  text-decoration: none;
-
-  font-size: 15px;
   font-weight: bold;
 
-  transition: 0.3s;
+  transition: 0.2s;
 }
 
 .informacion-btn:hover {
-  background: #e68900;
+  background: #e98500;
 
   transform: translateY(-2px);
 }
-
 
 /* =========================================
    SIN RESULTADOS
 ========================================= */
 
 .sin-resultados {
-  max-width: 600px;
-
-  margin: 50px auto;
-
   text-align: center;
 
-  padding: 50px 20px;
+  padding: 70px 20px;
+
+  background: #f7f9fb;
+
+  border-radius: 12px;
 }
 
-.sin-resultados-icono {
-  font-size: 70px;
+.sin-resultados > div {
+  font-size: 60px;
 
   margin-bottom: 15px;
 }
 
 .sin-resultados h3 {
-  color: #0066b3;
+  color: #075f99;
 
-  font-size: 25px;
-
-  margin-bottom: 10px;
+  margin-bottom: 8px;
 }
 
 .sin-resultados p {
-  color: #666;
+  color: #888;
 
-  margin-bottom: 25px;
+  margin-bottom: 20px;
 }
 
 .sin-resultados button {
   border: none;
 
-  background: #0066b3;
+  background: #0874b9;
 
   color: white;
 
-  padding: 12px 25px;
+  padding: 12px 20px;
 
-  border-radius: 8px;
-
-  font-weight: bold;
+  border-radius: 7px;
 
   cursor: pointer;
+
+  font-weight: bold;
 }
 
-
 /* =========================================
-   INFORMACIÓN ADOPCIÓN
+   ¿POR QUÉ ADOPTAR?
 ========================================= */
 
 .adopcion-info {
-  width: 100%;
+  margin-top: 60px;
 
-  padding: 65px 10%;
+  background: #fff6e8;
 
-  background: #eef6ff;
+  border-left: 5px solid #ff9500;
+
+  border-radius: 10px;
+
+  padding: 25px;
 
   display: flex;
 
-  justify-content: center;
   align-items: center;
 
-  gap: 25px;
+  gap: 20px;
 }
 
 .info-icon {
-  width: 65px;
-  height: 65px;
+  width: 55px;
+  height: 55px;
 
   border-radius: 50%;
 
-  background: #ff9800;
-
-  color: white;
+  background: white;
 
   display: flex;
 
@@ -741,82 +615,92 @@ body {
 }
 
 .adopcion-info h2 {
-  color: #0066b3;
+  color: #075f99;
 
-  font-size: 30px;
-
-  margin-bottom: 10px;
+  margin-bottom: 7px;
 }
 
 .adopcion-info p {
-  max-width: 800px;
+  color: #666;
 
-  color: #555;
-
-  font-size: 17px;
-
-  line-height: 1.7;
+  line-height: 1.6;
 }
-
 
 /* =========================================
    FOOTER
 ========================================= */
 
 .adopcion-footer {
-  width: 100%;
-
   background: #0066b3;
 
   color: white;
 
-  text-align: center;
-
   padding: 30px 20px;
+
+  text-align: center;
 }
 
+/* LOGO DEL FOOTER */
+
 .footer-logo {
-  font-size: 24px;
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  gap: 8px;
+
+  font-size: 21px;
 
   margin-bottom: 8px;
 }
 
-.adopcion-footer p {
-  font-size: 15px;
+.footer-logo img {
+  width: 45px;
+  height: 45px;
 
-  margin-bottom: 10px;
+  object-fit: contain;
+
+  display: block;
+
+  flex-shrink: 0;
 }
 
-.adopcion-footer span {
+.adopcion-footer p {
   font-size: 13px;
+
+  margin-bottom: 12px;
 
   opacity: 0.9;
 }
 
+.adopcion-footer > span {
+  font-size: 11px;
+
+  opacity: 0.75;
+}
 
 /* =========================================
    TABLET
 ========================================= */
 
-@media (max-width: 1100px) {
+@media (max-width: 1000px) {
 
-  .adopcion-menu {
-    gap: 15px;
+  .adopcion-navbar {
+    height: 90px;
 
-    margin-right: 15px;
+    padding: 0 10px 0 0;
+
+    gap: 18px;
   }
 
-  .adopcion-menu a {
-    font-size: 15px;
-  }
-
-  .adopcion-cuenta a {
-    font-size: 14px;
+  .adopcion-logo {
+    height: 90px;
   }
 
   .adopcion-logo-img {
-    width: 65px;
-    height: 65px;
+    width: 75px;
+    height: 75px;
   }
 
   .logo-texto strong {
@@ -827,13 +711,22 @@ body {
     font-size: 8px;
   }
 
-  .mascotas-grid {
-    grid-template-columns:
-      repeat(2, minmax(0, 1fr));
+  .adopcion-menu {
+    gap: 15px;
   }
 
-}
+  .adopcion-menu a {
+    font-size: 14px;
+  }
 
+  .adopcion-contenido {
+    padding: 45px 30px;
+  }
+
+  .mascotas-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
 
 /* =========================================
    CELULAR
@@ -842,116 +735,102 @@ body {
 @media (max-width: 700px) {
 
   .adopcion-navbar {
-    position: relative;
-
     height: auto;
 
     min-height: 120px;
 
-    padding: 12px;
+    padding: 10px 12px;
 
-    flex-direction: column;
+    flex-wrap: wrap;
 
-    align-items: flex-start;
-
-    justify-content: center;
-
-    gap: 12px;
+    gap: 10px;
   }
 
   .adopcion-logo {
-    height: auto;
+    height: 70px;
 
-    align-self: flex-start;
+    width: 100%;
+  }
+
+  .adopcion-logo-img {
+    width: 65px;
+    height: 65px;
+  }
+
+  .logo-texto strong {
+    font-size: 23px;
+  }
+
+  .logo-texto span {
+    font-size: 8px;
   }
 
   .adopcion-menu {
-    width: 100%;
+    order: 2;
 
-    margin: 0;
+    width: 100%;
 
     justify-content: center;
 
     flex-wrap: wrap;
 
     gap: 12px;
+
+    padding-bottom: 5px;
   }
 
   .adopcion-menu a {
-    font-size: 14px;
-  }
-
-  .adopcion-cuenta {
-    width: 100%;
-
-    justify-content: center;
+    font-size: 13px;
   }
 
   .adopcion-contenido {
-    padding-top: 0;
-  }
-
-  .adopcion-intro {
-    padding: 55px 7% 45px;
+    padding: 40px 18px;
   }
 
   .adopcion-intro h1 {
-    font-size: 34px;
+    font-size: 31px;
   }
 
   .adopcion-intro p {
-    font-size: 16px;
-  }
-
-  .filtros {
-    padding: 25px 6%;
+    font-size: 14px;
   }
 
   .filtros-select {
-    flex-direction: column;
+    grid-template-columns: 1fr;
   }
 
-  .filtros-select select,
-  .limpiar-btn {
+  .filtros-select select {
     width: 100%;
   }
 
-  .resultados {
-    padding: 40px 6%;
-  }
-
-  .resultados-header h2 {
-    font-size: 28px;
+  .limpiar-btn {
+    height: 43px;
   }
 
   .mascotas-grid {
     grid-template-columns: 1fr;
-
-    gap: 25px;
   }
 
-  .mascota-card {
-    max-width: 400px;
-
-    margin: 0 auto;
+  .mascota-imagen {
+    height: 230px;
   }
 
   .adopcion-info {
     flex-direction: column;
 
     text-align: center;
-
-    padding: 55px 7%;
   }
-
 }
-
 
 /* =========================================
    CELULAR PEQUEÑO
 ========================================= */
 
-@media (max-width: 450px) {
+@media (max-width: 420px) {
+
+  .adopcion-logo {
+    height: 65px;
+  }
 
   .adopcion-logo-img {
     width: 60px;
@@ -967,35 +846,24 @@ body {
   }
 
   .adopcion-menu {
-    gap: 9px;
+    justify-content: center;
+
+    gap: 10px;
   }
 
   .adopcion-menu a {
-    font-size: 13px;
-  }
-
-  .adopcion-cuenta {
-    gap: 9px;
-  }
-
-  .adopcion-cuenta a {
-    font-size: 13px;
+    font-size: 12px;
   }
 
   .adopcion-intro h1 {
-    font-size: 29px;
-  }
-
-  .adopcion-intro p {
-    font-size: 15px;
+    font-size: 27px;
   }
 
   .mascota-imagen {
     height: 210px;
   }
 
-  .mascota-info h3 {
-    font-size: 23px;
+  .mascota-emoji {
+    font-size: 90px;
   }
-
 }

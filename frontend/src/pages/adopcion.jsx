@@ -122,7 +122,7 @@ function Adopcion() {
           <div className="logo-texto">
 
             <strong>
-              RefugioPet
+              RefugiPet
             </strong>
 
             <span>
@@ -482,7 +482,7 @@ function Adopcion() {
           />
 
           <strong>
-            RefugioPet
+            RefugiPet
           </strong>
 
         </div>
@@ -492,7 +492,7 @@ function Adopcion() {
         </p>
 
         <span>
-          ©️ 2026 RefugioPet · Proyecto SENA ADSO
+          ©️ 2026 RefugiPet - Todos los derechos reservados
         </span>
 
       </footer>

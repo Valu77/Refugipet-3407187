@@ -18,14 +18,13 @@ body {
   color: #333;
 }
 
-
 /* =========================================
 HEADER
 ========================================= */
 
 .principal-header {
   width: 100%;
-  height: 105px;
+  height: 95px;
 
   background: #0066b3;
 
@@ -38,22 +37,16 @@ HEADER
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
 }
 
-
-/* =========================================
-CONTENEDOR HEADER
-========================================= */
-
 .principal-container {
   width: 100%;
-  height: 105px;
+  height: 95px;
 
-  padding: 0;
+  padding: 8px 20px 8px 10px;
 
   display: flex;
   align-items: center;
   justify-content: space-between;
 }
-
 
 /* =========================================
 LOGO + REFUGIOPET
@@ -61,36 +54,21 @@ LOGO + REFUGIOPET
 
 .principal-marca {
   display: flex;
-  align-items: stretch;
+  align-items: center;
 
-  height: 105px;
-
-  gap: 5px;
+  gap: 3px;
 
   flex-shrink: 0;
 }
 
-
-/* =========================================
-LOGO DE ARRIBA A ABAJO
-========================================= */
-
 .principal-logo {
-  width: 105px;
-  height: 105px;
+  width: 75px;
+  height: 75px;
 
-  object-fit: cover;
+  object-fit: contain;
 
   display: block;
-
-  margin: 0;
-  padding: 0;
 }
-
-
-/* =========================================
-TEXTO REFUGIOPET
-========================================= */
 
 .principal-marca > div {
   display: flex;
@@ -120,7 +98,6 @@ TEXTO REFUGIOPET
   white-space: nowrap;
 }
 
-
 /* =========================================
 MENÚ
 ========================================= */
@@ -130,8 +107,6 @@ MENÚ
   align-items: center;
 
   gap: 25px;
-
-  padding-right: 25px;
 }
 
 .principal-nav a {
@@ -148,7 +123,6 @@ MENÚ
 .principal-nav a:hover {
   color: #ff9800;
 }
-
 
 /* =========================================
 BIENVENIDA
@@ -193,7 +167,6 @@ BIENVENIDA
   margin: 0 auto;
 }
 
-
 /* =========================================
 MASCOTAS
 ========================================= */
@@ -222,7 +195,6 @@ MASCOTAS
   margin-bottom: 45px;
 }
 
-
 /* =========================================
 CONTENEDOR DE MASCOTAS
 ========================================= */
@@ -241,7 +213,6 @@ CONTENEDOR DE MASCOTAS
   margin: 0 auto;
 }
 
-
 /* =========================================
 TARJETAS
 ========================================= */
@@ -255,8 +226,7 @@ TARJETAS
 
   overflow: hidden;
 
-  box-shadow:
-    0 5px 18px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 5px 18px rgba(0, 0, 0, 0.12);
 
   transition: 0.3s;
 }
@@ -264,10 +234,8 @@ TARJETAS
 .mascota-card:hover {
   transform: translateY(-7px);
 
-  box-shadow:
-    0 10px 25px rgba(0, 0, 0, 0.18);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.18);
 }
-
 
 /* =========================================
 IMAGEN DE MASCOTA
@@ -287,7 +255,6 @@ IMAGEN DE MASCOTA
 
   font-size: 100px;
 }
-
 
 /* =========================================
 INFORMACIÓN DE MASCOTA
@@ -310,7 +277,6 @@ INFORMACIÓN DE MASCOTA
 
   margin-bottom: 20px;
 }
-
 
 /* =========================================
 BOTÓN VER INFORMACIÓN
@@ -346,7 +312,6 @@ BOTÓN VER INFORMACIÓN
   transform: translateY(-2px);
 }
 
-
 /* =========================================
 BOTÓN VER TODAS LAS MASCOTAS
 ========================================= */
@@ -381,7 +346,6 @@ BOTÓN VER TODAS LAS MASCOTAS
   transform: translateY(-2px);
 }
 
-
 /* =========================================
 SECCIÓN ADOPCIÓN
 ========================================= */
@@ -414,7 +378,6 @@ SECCIÓN ADOPCIÓN
   line-height: 1.7;
 }
 
-
 /* =========================================
 BOTÓN ADOPCIÓN
 ========================================= */
@@ -445,7 +408,6 @@ BOTÓN ADOPCIÓN
   transform: translateY(-3px);
 }
 
-
 /* =========================================
 CONTACTO
 ========================================= */
@@ -474,12 +436,19 @@ CONTACTO
   margin-bottom: 25px;
 }
 
-.contacto-principal button {
-  border: none;
+/* =========================================
+BOTÓN CONTACTO
+ESTE ES EL ÚNICO CAMBIO
+========================================= */
+
+.boton-contacto {
+  display: inline-block;
 
   background: #0066b3;
 
   color: white;
+
+  text-decoration: none;
 
   padding: 14px 30px;
 
@@ -494,12 +463,11 @@ CONTACTO
   transition: 0.3s;
 }
 
-.contacto-principal button:hover {
+.boton-contacto:hover {
   background: #00528f;
 
   transform: translateY(-2px);
 }
-
 
 /* =========================================
 FOOTER
@@ -519,7 +487,6 @@ FOOTER
   font-size: 14px;
 }
 
-
 /* =========================================
 TABLET
 ========================================= */
@@ -527,25 +494,20 @@ TABLET
 @media (max-width: 1000px) {
 
   .principal-container {
-    padding: 0;
-  }
-
-  .principal-marca {
-    height: 105px;
-  }
-
-  .principal-logo {
-    width: 105px;
-    height: 105px;
+    padding: 8px 10px;
   }
 
   .principal-nav {
     gap: 15px;
-    padding-right: 15px;
   }
 
   .principal-nav a {
     font-size: 15px;
+  }
+
+  .principal-logo {
+    width: 65px;
+    height: 65px;
   }
 
   .principal-marca h1 {
@@ -561,7 +523,6 @@ TABLET
   }
 }
 
-
 /* =========================================
 CELULAR
 ========================================= */
@@ -570,7 +531,6 @@ CELULAR
 
   .principal-header {
     height: auto;
-
     position: relative;
   }
 
@@ -587,18 +547,9 @@ CELULAR
   }
 
   .principal-marca {
-    height: 70px;
-
     justify-content: flex-start;
 
     align-self: flex-start;
-  }
-
-  .principal-logo {
-    width: 70px;
-    height: 70px;
-
-    object-fit: cover;
   }
 
   .principal-nav {
@@ -663,7 +614,6 @@ CELULAR
   }
 }
 
-
 /* =========================================
 CELULAR PEQUEÑO
 ========================================= */
@@ -672,10 +622,6 @@ CELULAR PEQUEÑO
 
   .principal-logo {
     width: 60px;
-    height: 60px;
-  }
-
-  .principal-marca {
     height: 60px;
   }
 

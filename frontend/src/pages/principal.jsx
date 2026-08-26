@@ -1,6 +1,5 @@
 import "../principal.css";
 import { Link } from "react-router-dom";
-
 import logo from "../assets/logo.png";
 
 function Principal() {
@@ -9,34 +8,27 @@ function Principal() {
       {/* ================= HEADER ================= */}
 
       <header className="principal-header">
-
         <div className="principal-container">
 
           {/* LOGO */}
           <div className="principal-marca">
-
             <img
               src={logo}
-              alt="Logo RefugiPet"
+              alt="Logo RefugioPet"
               className="principal-logo"
             />
 
             <div>
-              <h1>RefugioPet</h1>
+              <h1>RefugiPet</h1>
+
               <p>
                 Juntos construimos un hogar para cada mascota
               </p>
             </div>
-
           </div>
-
 
           {/* MENÚ */}
           <nav className="principal-nav">
-
-            <Link to="/principal">
-              Inicio
-            </Link>
 
             <Link to="/adopcion">
               Mascotas
@@ -46,20 +38,17 @@ function Principal() {
               Adopción
             </Link>
 
-            <a href="#contacto">
+            <Link to="/contacto">
               Contacto
-            </a>
+            </Link>
 
             <Link to="/">
               Cerrar Sesión
             </Link>
 
           </nav>
-
         </div>
-
       </header>
-
 
       {/* ================= CONTENIDO ================= */}
 
@@ -68,11 +57,9 @@ function Principal() {
         {/* ================= BIENVENIDA ================= */}
 
         <section className="bienvenida-principal">
-
           <div className="bienvenida-contenido">
-
             <h2>
-              ¡Bienvenido a RefugioPet! 🐾
+              ¡Bienvenido a RefugiPet! 🐾
             </h2>
 
             <p>
@@ -81,19 +68,12 @@ function Principal() {
               algunos de nuestros amigos que están esperando
               encontrar una familia y un hogar lleno de amor.
             </p>
-
           </div>
-
         </section>
-
 
         {/* ================= MASCOTAS ================= */}
 
-        <section
-          className="mascotas"
-          id="mascotas"
-        >
-
+        <section className="mascotas" id="mascotas">
           <h2>
             Mascotas disponibles para adopción
           </h2>
@@ -103,23 +83,16 @@ function Principal() {
             esperando encontrar un hogar.
           </p>
 
-
           <div className="contenedor-mascotas">
 
-
-            {/* ================= MAX ================= */}
-
+            {/* MAX */}
             <div className="mascota-card">
-
               <div className="mascota-imagen">
                 🐶
               </div>
 
               <div className="mascota-info">
-
-                <h3>
-                  Max
-                </h3>
+                <h3>Max</h3>
 
                 <p>
                   Perro · 2 años
@@ -131,25 +104,17 @@ function Principal() {
                 >
                   Ver información
                 </Link>
-
               </div>
-
             </div>
 
-
-            {/* ================= ROCKY ================= */}
-
+            {/* ROCKY */}
             <div className="mascota-card">
-
               <div className="mascota-imagen">
                 🐕
               </div>
 
               <div className="mascota-info">
-
-                <h3>
-                  Rocky
-                </h3>
+                <h3>Rocky</h3>
 
                 <p>
                   Perro · 3 años
@@ -161,25 +126,17 @@ function Principal() {
                 >
                   Ver información
                 </Link>
-
               </div>
-
             </div>
 
-
-            {/* ================= LUNA ================= */}
-
+            {/* LUNA */}
             <div className="mascota-card">
-
               <div className="mascota-imagen">
                 🐱
               </div>
 
               <div className="mascota-info">
-
-                <h3>
-                  Luna
-                </h3>
+                <h3>Luna</h3>
 
                 <p>
                   Gata · 1 año
@@ -191,25 +148,17 @@ function Principal() {
                 >
                   Ver información
                 </Link>
-
               </div>
-
             </div>
 
-
-            {/* ================= BRUNO ================= */}
-
+            {/* BRUNO */}
             <div className="mascota-card">
-
               <div className="mascota-imagen">
                 🐕‍🦺
               </div>
 
               <div className="mascota-info">
-
-                <h3>
-                  Bruno
-                </h3>
+                <h3>Bruno</h3>
 
                 <p>
                   Perro · 4 años
@@ -221,35 +170,21 @@ function Principal() {
                 >
                   Ver información
                 </Link>
-
               </div>
-
             </div>
-
 
           </div>
 
-
-          {/* BOTÓN PARA VER TODAS */}
-
           <div className="boton-ver-mascotas">
-
             <Link to="/adopcion">
               Ver todas las mascotas
             </Link>
-
           </div>
-
         </section>
-
 
         {/* ================= ADOPCIÓN ================= */}
 
-        <section
-          className="seccion-adopcion"
-          id="adopcion"
-        >
-
+        <section className="seccion-adopcion">
           <h2>
             Adopta y cambia una vida ❤️
           </h2>
@@ -265,17 +200,11 @@ function Principal() {
           >
             Quiero adoptar
           </Link>
-
         </section>
-
 
         {/* ================= CONTACTO ================= */}
 
-        <section
-          className="contacto-principal"
-          id="contacto"
-        >
-
+        <section className="contacto-principal">
           <h2>
             ¿Necesitas ayuda?
           </h2>
@@ -285,25 +214,23 @@ function Principal() {
             o sobre el proceso de adopción, contáctanos.
           </p>
 
-          <button>
+          <Link
+            to="/contacto"
+            className="boton-contacto"
+          >
             Contáctanos
-          </button>
-
+          </Link>
         </section>
 
       </main>
 
-
       {/* ================= FOOTER ================= */}
 
       <footer className="principal-footer">
-
         <p>
           © 2026 RefugiPet - Todos los derechos reservados
         </p>
-
       </footer>
-
     </>
   );
 }
