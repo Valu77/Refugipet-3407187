@@ -1,5 +1,6 @@
 import "../ini.css";
 import { Link } from "react-router-dom";
+import { useState } from "react";
 
 import logo from "../assets/logo.png";
 
@@ -8,6 +9,65 @@ import carru2 from "../assets/carrusel/carru2 (2).png";
 import carru3 from "../assets/carrusel/carru3 (2).png";
 
 function Inicio() {
+
+  // ================= CONTACTO =================
+
+  const [formulario, setFormulario] = useState({
+    nombre: "",
+    correo: "",
+    mensaje: ""
+  });
+
+  const [mensajeEnviado, setMensajeEnviado] = useState(false);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+
+    setFormulario({
+      ...formulario,
+      [name]: value
+    });
+
+    setMensajeEnviado(false);
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+
+    // Obtener mensajes que ya existen
+    const mensajesGuardados = JSON.parse(
+      localStorage.getItem("mensajesContacto") || "[]"
+    );
+
+    // Crear nuevo mensaje
+    const nuevoMensaje = {
+      id: Date.now(),
+      nombre: formulario.nombre,
+      correo: formulario.correo,
+      mensaje: formulario.mensaje,
+      fecha: new Date().toLocaleString()
+    };
+
+    // Agregar el nuevo mensaje
+    mensajesGuardados.push(nuevoMensaje);
+
+    // Guardarlo en localStorage
+    localStorage.setItem(
+      "mensajesContacto",
+      JSON.stringify(mensajesGuardados)
+    );
+
+    // Mostrar confirmación
+    setMensajeEnviado(true);
+
+    // Limpiar formulario
+    setFormulario({
+      nombre: "",
+      correo: "",
+      mensaje: ""
+    });
+  };
+
   return (
     <>
       {/* ================= HEADER ================= */}
@@ -34,13 +94,9 @@ function Inicio() {
 
           </div>
 
-
           {/* MENÚ */}
           <nav>
             <ul>
-
-              
-              
 
               <li>
                 <Link to="/iniciosesion">
@@ -169,20 +225,32 @@ function Inicio() {
 
         <h2>Contáctanos</h2>
 
-        <form>
+        <form onSubmit={handleSubmit}>
 
           <input
             type="text"
+            name="nombre"
             placeholder="Nombre completo"
+            value={formulario.nombre}
+            onChange={handleChange}
+            required
           />
 
           <input
             type="email"
+            name="correo"
             placeholder="Correo electrónico"
+            value={formulario.correo}
+            onChange={handleChange}
+            required
           />
 
           <textarea
+            name="mensaje"
             placeholder="Escribe tu mensaje"
+            value={formulario.mensaje}
+            onChange={handleChange}
+            required
           ></textarea>
 
           <button type="submit">
@@ -190,6 +258,19 @@ function Inicio() {
           </button>
 
         </form>
+
+        {mensajeEnviado && (
+          <p
+            style={{
+              color: "#20a35a",
+              fontWeight: "bold",
+              marginTop: "15px",
+              textAlign: "center"
+            }}
+          >
+            ¡Mensaje enviado correctamente!
+          </p>
+        )}
 
       </section>
 

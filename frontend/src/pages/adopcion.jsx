@@ -1,71 +1,52 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import "../adopcion.css";
-
 import logo from "../assets/logo.png";
 
-const mascotas = [
-  {
-    id: 1,
-    nombre: "Max",
-    tipo: "Perro",
-    edad: 2,
-    tamaño: "Mediano",
-    imagen: "",
-    emoji: "🐶",
-  },
-  {
-    id: 2,
-    nombre: "Rocky",
-    tipo: "Perro",
-    edad: 3,
-    tamaño: "Grande",
-    imagen: "",
-    emoji: "🐕",
-  },
-  {
-    id: 3,
-    nombre: "Luna",
-    tipo: "Gata",
-    edad: 1,
-    tamaño: "Pequeño",
-    imagen: "",
-    emoji: "🐱",
-  },
-  {
-    id: 4,
-    nombre: "Bruno",
-    tipo: "Perro",
-    edad: 4,
-    tamaño: "Mediano",
-    imagen: "",
-    emoji: "🐕",
-  },
-  {
-    id: 5,
-    nombre: "Mia",
-    tipo: "Gata",
-    edad: 2,
-    tamaño: "Pequeño",
-    imagen: "",
-    emoji: "🐈",
-  },
-  {
-    id: 6,
-    nombre: "Toby",
-    tipo: "Perro",
-    edad: 1,
-    tamaño: "Pequeño",
-    imagen: "",
-    emoji: "🐕‍🦺",
-  },
-];
+const API_URL = "http://127.0.0.1:8000/api";
+
+const emojiPorTipo = {
+  Perro: "🐶",
+  Gato: "🐱",
+  Ave: "🐦",
+  Conejo: "🐰",
+};
 
 function Adopcion() {
+  const [mascotas, setMascotas] = useState([]);
+  const [cargando, setCargando] = useState(true);
+  const [error, setError] = useState("");
+
   const [busqueda, setBusqueda] = useState("");
   const [tipo, setTipo] = useState("Todos");
   const [tamaño, setTamaño] = useState("Todos");
   const [edad, setEdad] = useState("Todas");
+
+  const cargarMascotas = async () => {
+    setCargando(true);
+    setError("");
+
+    try {
+      const respuesta = await fetch(`${API_URL}/mascotas/`);
+
+      if (!respuesta.ok) {
+        throw new Error("No se pudieron cargar las mascotas");
+      }
+
+      const datos = await respuesta.json();
+
+      setMascotas(datos);
+    } catch (err) {
+      console.error(err);
+      setError("No se pudo conectar con el servidor.");
+    } finally {
+      setCargando(false);
+    }
+  };
+
+  useEffect(() => {
+    cargarMascotas();
+  }, []);
 
   const mascotasFiltradas = mascotas.filter((mascota) => {
     const coincideBusqueda = mascota.nombre
@@ -74,10 +55,13 @@ function Adopcion() {
 
     const coincideTipo =
       tipo === "Todos" ||
-      mascota.tipo.toLowerCase().includes(tipo.toLowerCase());
+      mascota.tipo
+        .toLowerCase()
+        .includes(tipo.toLowerCase());
 
     const coincideTamaño =
-      tamaño === "Todos" || mascota.tamaño === tamaño;
+      tamaño === "Todos" ||
+      mascota.tamaño === tamaño;
 
     const coincideEdad =
       edad === "Todas" ||
@@ -105,17 +89,18 @@ function Adopcion() {
   return (
     <div className="adopcion-page">
 
-      {/* ================= NAVBAR ================= */}
+      {/* NAVBAR */}
 
       <header className="adopcion-navbar">
 
-        {/* LOGO */}
-
-        <Link to="/principal" className="adopcion-logo">
+        <Link
+          to="/principal"
+          className="adopcion-logo"
+        >
 
           <img
             src={logo}
-            alt="Logo RefugioPet"
+            alt="Logo RefugiPet"
             className="adopcion-logo-img"
           />
 
@@ -133,13 +118,14 @@ function Adopcion() {
 
         </Link>
 
-
-        {/* MENÚ */}
-
         <nav className="adopcion-menu">
 
           <Link to="/principal">
             Inicio
+          </Link>
+
+          <Link to="/adopcion">
+            Mascotas
           </Link>
 
           <a href="#contacto">
@@ -147,7 +133,7 @@ function Adopcion() {
           </a>
 
           <Link to="/">
-            Cerrar sesión
+            Cerrar sesion
           </Link>
 
         </nav>
@@ -155,47 +141,49 @@ function Adopcion() {
       </header>
 
 
-      {/* ================= CONTENIDO ================= */}
+      {/* CONTENIDO */}
 
       <main className="adopcion-contenido">
 
-        {/* ================= INTRO ================= */}
+        {/* INTRODUCCIÓN */}
 
         <section className="adopcion-intro">
 
           <span className="adopcion-etiqueta">
-            🐾 ADOPTA CON AMOR
+            ADOPTA CON AMOR
           </span>
 
           <h1>
             Encuentra a tu nuevo
-            <span> mejor amigo</span>
+            <span> mejor amigo</span> 🐾
           </h1>
 
           <p>
-            Explora nuestras mascotas disponibles para adopción
-            y encuentra el compañero ideal para formar parte de
-            tu familia.
+            Conoce nuestras mascotas disponibles para
+            adopción y encuentra el compañero ideal para
+            tu hogar.
           </p>
 
         </section>
 
 
-        {/* ================= BUSCADOR ================= */}
+        {/* FILTROS */}
 
         <section className="filtros">
 
           <div className="buscador">
 
             <span className="icono-busqueda">
-              🔎
+              🔍
             </span>
 
             <input
               type="text"
               placeholder="Buscar mascota por nombre..."
               value={busqueda}
-              onChange={(e) => setBusqueda(e.target.value)}
+              onChange={(e) =>
+                setBusqueda(e.target.value)
+              }
             />
 
           </div>
@@ -205,7 +193,9 @@ function Adopcion() {
 
             <select
               value={tipo}
-              onChange={(e) => setTipo(e.target.value)}
+              onChange={(e) =>
+                setTipo(e.target.value)
+              }
             >
 
               <option value="Todos">
@@ -216,8 +206,16 @@ function Adopcion() {
                 Perros
               </option>
 
-              <option value="Gata">
+              <option value="Gato">
                 Gatos
+              </option>
+
+              <option value="Ave">
+                Aves
+              </option>
+
+              <option value="Conejo">
+                Conejos
               </option>
 
             </select>
@@ -225,7 +223,9 @@ function Adopcion() {
 
             <select
               value={tamaño}
-              onChange={(e) => setTamaño(e.target.value)}
+              onChange={(e) =>
+                setTamaño(e.target.value)
+              }
             >
 
               <option value="Todos">
@@ -249,7 +249,9 @@ function Adopcion() {
 
             <select
               value={edad}
-              onChange={(e) => setEdad(e.target.value)}
+              onChange={(e) =>
+                setEdad(e.target.value)
+              }
             >
 
               <option value="Todas">
@@ -275,7 +277,7 @@ function Adopcion() {
               className="limpiar-btn"
               onClick={limpiarFiltros}
             >
-              Limpiar
+              Limpiar filtros
             </button>
 
           </div>
@@ -283,30 +285,112 @@ function Adopcion() {
         </section>
 
 
-        {/* ================= RESULTADOS ================= */}
+        {/* RESULTADOS */}
 
-        <section className="resultados">
+        <div className="resultados-header">
 
-          <div className="resultados-header">
+          <div>
 
-            <div>
+            <h2>
+              Mascotas disponibles
+            </h2>
 
-              <h2>
-                Mascotas disponibles
-              </h2>
-
-              <p>
-                {mascotasFiltradas.length} mascotas encontradas
-              </p>
-
-            </div>
+            <p>
+              {mascotasFiltradas.length} mascota
+              {mascotasFiltradas.length !== 1
+                ? "s"
+                : ""}{" "}
+              encontrada
+              {mascotasFiltradas.length !== 1
+                ? "s"
+                : ""}
+            </p>
 
           </div>
 
+        </div>
 
-          {/* ================= TARJETAS ================= */}
 
-          {mascotasFiltradas.length > 0 ? (
+        {/* CARGANDO */}
+
+        {cargando && (
+
+          <div className="sin-resultados">
+
+            <div>
+              🐾
+            </div>
+
+            <h3>
+              Cargando mascotas...
+            </h3>
+
+          </div>
+
+        )}
+
+
+        {/* ERROR */}
+
+        {!cargando && error && (
+
+          <div className="sin-resultados">
+
+            <div>
+              ⚠️
+            </div>
+
+            <h3>
+              No se pudieron cargar las mascotas
+            </h3>
+
+            <p>
+              {error}
+            </p>
+
+            <button onClick={cargarMascotas}>
+              Intentar nuevamente
+            </button>
+
+          </div>
+
+        )}
+
+
+        {/* SIN RESULTADOS */}
+
+        {!cargando &&
+          !error &&
+          mascotasFiltradas.length === 0 && (
+
+            <div className="sin-resultados">
+
+              <div>
+                🐾
+              </div>
+
+              <h3>
+                No encontramos mascotas
+              </h3>
+
+              <p>
+                Intenta cambiar los filtros de búsqueda.
+              </p>
+
+              <button onClick={limpiarFiltros}>
+                Limpiar filtros
+              </button>
+
+            </div>
+
+          )}
+
+
+        {/* MASCOTAS */}
+
+        {!cargando &&
+          !error &&
+          mascotasFiltradas.length > 0 && (
 
             <div className="mascotas-grid">
 
@@ -321,29 +405,33 @@ function Adopcion() {
 
                   <div className="mascota-imagen">
 
-                    {mascota.imagen ? (
+                    {mascota.estado !== "Adoptada" && (
 
-                      <img
-                        src={mascota.imagen}
-                        alt={`Foto de ${mascota.nombre}`}
-                      />
-
-                    ) : (
-
-                      <span className="mascota-emoji">
-                        {mascota.emoji}
+                      <span className="disponible">
+                        Disponible
                       </span>
 
                     )}
 
-                    <div className="disponible">
-                      Disponible
-                    </div>
+                    {mascota.imagen ? (
+
+                      <img
+                        src={mascota.imagen}
+                        alt={mascota.nombre}
+                      />
+
+                    ) : (
+
+                      <div className="mascota-emoji">
+                        {emojiPorTipo[mascota.tipo] || "🐾"}
+                      </div>
+
+                    )}
 
                   </div>
 
 
-                  {/* INFORMACION */}
+                  {/* INFORMACIÓN */}
 
                   <div className="mascota-info">
 
@@ -354,7 +442,7 @@ function Adopcion() {
                       </h3>
 
                       <span>
-                        ❤️
+                        {emojiPorTipo[mascota.tipo] || "🐾"}
                       </span>
 
                     </div>
@@ -363,29 +451,50 @@ function Adopcion() {
                     <div className="datos-mascota">
 
                       <span>
-                        🐾 {mascota.tipo}
+                        Tipo: {mascota.tipo}
                       </span>
 
                       <span>
-                        🎂 {mascota.edad}{" "}
+                        Edad: {mascota.edad}{" "}
                         {mascota.edad === 1
                           ? "año"
                           : "años"}
                       </span>
 
                       <span>
-                        📏 {mascota.tamaño}
+                        Tamaño: {mascota.tamaño}
                       </span>
+
+                      {mascota.raza && (
+                        <span>
+                          Raza: {mascota.raza}
+                        </span>
+                      )}
 
                     </div>
 
 
-                    <Link
-                      to={`/adopcion/${mascota.id}`}
-                      className="informacion-btn"
-                    >
-                      Ver información
-                    </Link>
+                    {/* SOLICITAR ADOPCIÓN */}
+
+                    {mascota.estado === "Adoptada" ? (
+
+                      <button
+                        className="informacion-btn"
+                        disabled
+                      >
+                        Ya adoptada
+                      </button>
+
+                    ) : (
+
+                      <Link
+                        to={`/solicitar-adopcion/${mascota.id}`}
+                        className="informacion-btn"
+                      >
+                        Solicitar adopcion
+                      </Link>
+
+                    )}
 
                   </div>
 
@@ -395,41 +504,18 @@ function Adopcion() {
 
             </div>
 
-          ) : (
-
-            <div className="sin-resultados">
-
-              <div>
-                🐶
-              </div>
-
-              <h3>
-                No encontramos mascotas
-              </h3>
-
-              <p>
-                Intenta cambiar los filtros de búsqueda.
-              </p>
-
-              <button
-                onClick={limpiarFiltros}
-              >
-                Ver todas las mascotas
-              </button>
-
-            </div>
-
           )}
 
-        </section>
 
+        {/* INFORMACIÓN */}
 
-        {/* ================= INFORMACION ================= */}
-
-        <section className="adopcion-info">
+        <section
+          className="adopcion-info"
+          id="contacto"
+        >
 
           <div className="info-icon">
-            ❤️
+            🐾
           </div>
 
           <div>
@@ -439,38 +525,20 @@ function Adopcion() {
             </h2>
 
             <p>
-              Adoptar le brinda una segunda oportunidad a una
-              mascota y permite que encuentre un hogar donde
-              pueda recibir amor, cuidado y protección.
+              Adoptar una mascota es darle una segunda
+              oportunidad y brindarle un hogar lleno de
+              amor. En RefugiPet te ayudamos a encontrar
+              el compañero ideal para ti.
             </p>
 
           </div>
 
         </section>
 
-
-        {/* ================= CONTACTO ================= */}
-
-        <section
-          className="adopcion-contacto"
-          id="contacto"
-        >
-
-          <h2>
-            ¿Necesitas ayuda?
-          </h2>
-
-          <p>
-            Si tienes alguna pregunta sobre el proceso de
-            adopción, estamos aquí para ayudarte.
-          </p>
-
-        </section>
-
       </main>
 
 
-      {/* ================= FOOTER ================= */}
+      {/* FOOTER */}
 
       <footer className="adopcion-footer">
 
@@ -478,7 +546,7 @@ function Adopcion() {
 
           <img
             src={logo}
-            alt="Logo RefugioPet"
+            alt="Logo RefugiPet"
           />
 
           <strong>
@@ -488,11 +556,11 @@ function Adopcion() {
         </div>
 
         <p>
-          Juntos construimos un hogar para cada mascota.
+          © 2026 RefugiPet - Todos los derechos reservados
         </p>
 
         <span>
-          ©️ 2026 RefugiPet - Todos los derechos reservados
+          Juntos construimos un hogar para cada mascota
         </span>
 
       </footer>

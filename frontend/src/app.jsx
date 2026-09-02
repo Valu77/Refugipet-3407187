@@ -5,8 +5,9 @@ import Iniciosesion from "./pages/iniciosesion";
 import Registrar from "./pages/registrar";
 import Principal from "./pages/principal";
 import Adopcion from "./pages/adopcion";
-import Contacto from "./pages/Contacto";
+import Contacto from "./pages/contacto";
 import Admin from "./pages/admin/admin";
+import SolicitarAdopcion from "./pages/SolicitarAdopcion";
 
 function App() {
   return (
@@ -17,24 +18,53 @@ function App() {
         <Route path="/" element={<Inicio />} />
 
         {/* Inicio de sesión */}
-        <Route path="/iniciosesion" element={<Iniciosesion />} />
+        <Route
+          path="/iniciosesion"
+          element={<Iniciosesion />}
+        />
 
         {/* Login */}
-        <Route path="/login" element={<Iniciosesion />} />
+        <Route
+          path="/login"
+          element={<Iniciosesion />}
+        />
 
         {/* Registro */}
-        <Route path="/registrar" element={<Registrar />} />
+        <Route
+          path="/registrar"
+          element={<Registrar />}
+        />
 
-        {/* Página después de iniciar sesión */}
-        <Route path="/principal" element={<Principal />} />
+        {/* Página principal */}
+        <Route
+          path="/principal"
+          element={<Principal />}
+        />
 
         {/* Adopción */}
-        <Route path="/adopcion" element={<Adopcion />} />
+        <Route
+          path="/adopcion"
+          element={<Adopcion />}
+        />
+
         {/* Contacto */}
-        <Route path="/contacto" element={<Contacto />} />
-        {/* Admin */}
-        <Route path="/admin" element={<Admin />} />
-    
+        <Route
+          path="/contacto"
+          element={<Contacto />}
+        />
+
+        {/* Administrador */}
+        <Route
+          path="/admin"
+          element={<Admin />}
+        />
+
+        {/* Solicitar adopción */}
+        <Route
+          path="/solicitar-adopcion/:id"
+          element={<SolicitarAdopcion />}
+        />
+
       </Routes>
     </BrowserRouter>
   );

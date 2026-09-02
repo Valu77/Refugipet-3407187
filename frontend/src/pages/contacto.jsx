@@ -5,21 +5,74 @@ import "../contacto.css";
 import logo from "../assets/logo.png";
 
 function Contacto() {
-  const [enviado, setEnviado] = useState(false);
 
-  const enviarFormulario = (e) => {
+  // ================= FORMULARIO DE CONTACTO =================
+
+  const [formulario, setFormulario] = useState({
+    nombre: "",
+    correo: "",
+    asunto: "",
+    mensaje: ""
+  });
+
+  const [mensajeEnviado, setMensajeEnviado] = useState(false);
+
+
+  // ================= MANEJAR CAMBIOS =================
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+
+    setFormulario({
+      ...formulario,
+      [name]: value
+    });
+
+    setMensajeEnviado(false);
+  };
+
+
+  // ================= ENVIAR FORMULARIO =================
+
+  const handleSubmit = (e) => {
     e.preventDefault();
 
-    setEnviado(true);
+    // Obtener mensajes que ya existen
+    const mensajesGuardados = JSON.parse(
+      localStorage.getItem("mensajesContacto") || "[]"
+    );
 
-    // Limpia el formulario
-    e.target.reset();
+    // Crear nuevo mensaje
+    const nuevoMensaje = {
+      id: Date.now(),
+      nombre: formulario.nombre,
+      correo: formulario.correo,
+      asunto: formulario.asunto,
+      mensaje: formulario.mensaje,
+      fecha: new Date().toLocaleString()
+    };
 
-    // Oculta el mensaje después de 4 segundos
-    setTimeout(() => {
-      setEnviado(false);
-    }, 4000);
+    // Agregar el nuevo mensaje
+    mensajesGuardados.push(nuevoMensaje);
+
+    // Guardar en localStorage
+    localStorage.setItem(
+      "mensajesContacto",
+      JSON.stringify(mensajesGuardados)
+    );
+
+    // Mostrar confirmación
+    setMensajeEnviado(true);
+
+    // Limpiar formulario
+    setFormulario({
+      nombre: "",
+      correo: "",
+      asunto: "",
+      mensaje: ""
+    });
   };
+
 
   return (
     <div className="contacto-page">
@@ -27,27 +80,37 @@ function Contacto() {
       {/* ================= HEADER ================= */}
 
       <header className="contacto-header">
+
         <div className="contacto-container">
 
           {/* LOGO */}
 
           <div className="contacto-marca">
+
             <img
               src={logo}
-              alt="Logo RefugioPet"
+              alt="Logo RefugiPet"
               className="contacto-logo"
             />
 
             <div>
               <h1>RefugiPet</h1>
-              <p>Juntos construimos un hogar para cada mascota</p>
+
+              <p>
+                Juntos construimos un hogar para cada mascota
+              </p>
             </div>
+
           </div>
+
 
           {/* MENU */}
 
           <nav className="contacto-nav">
-            <Link to="/principal">Inicio</Link>
+
+            <Link to="/principal">
+              Inicio
+            </Link>
 
             <Link to="/adopcion">
               Mascotas
@@ -64,9 +127,11 @@ function Contacto() {
             <Link to="/">
               Cerrar sesión
             </Link>
+
           </nav>
 
         </div>
+
       </header>
 
 
@@ -83,55 +148,85 @@ function Contacto() {
           </p>
 
 
-          {/* FORMULARIO */}
+          {/* ================= FORMULARIO ================= */}
 
           <form
             className="contacto-formulario"
-            onSubmit={enviarFormulario}
+            onSubmit={handleSubmit}
           >
 
+            {/* NOMBRE */}
+
             <div className="campo">
+
               <label>Nombre</label>
 
               <input
                 type="text"
+                name="nombre"
                 placeholder="Escribe tu nombre"
+                value={formulario.nombre}
+                onChange={handleChange}
                 required
               />
+
             </div>
 
 
+            {/* CORREO */}
+
             <div className="campo">
+
               <label>Correo electrónico</label>
 
               <input
                 type="email"
+                name="correo"
                 placeholder="ejemplo@correo.com"
+                value={formulario.correo}
+                onChange={handleChange}
                 required
               />
+
             </div>
 
 
+            {/* ASUNTO */}
+
             <div className="campo">
+
               <label>Asunto</label>
 
               <input
                 type="text"
+                name="asunto"
                 placeholder="¿En qué podemos ayudarte?"
+                value={formulario.asunto}
+                onChange={handleChange}
                 required
               />
+
             </div>
 
 
+            {/* MENSAJE */}
+
             <div className="campo">
+
               <label>Mensaje</label>
 
               <textarea
+                name="mensaje"
                 placeholder="Escribe tu mensaje..."
+                value={formulario.mensaje}
+                onChange={handleChange}
                 required
               ></textarea>
+
             </div>
 
+
+            {/* BOTÓN */}
 
             <button
               type="submit"
@@ -141,9 +236,9 @@ function Contacto() {
             </button>
 
 
-            {/* MENSAJE DE CONFIRMACION */}
+            {/* MENSAJE DE CONFIRMACIÓN */}
 
-            {enviado && (
+            {mensajeEnviado && (
               <div className="mensaje-enviado">
                 ✅ ¡Tu mensaje ha sido enviado correctamente!
               </div>
@@ -159,9 +254,11 @@ function Contacto() {
       {/* ================= FOOTER ================= */}
 
       <footer className="contacto-footer">
+
         <p>
           © 2026 RefugiPet - Todos los derechos reservados
         </p>
+
       </footer>
 
     </div>
