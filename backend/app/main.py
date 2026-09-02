@@ -93,4 +93,11 @@ app.include_router(
     mascotas.router,
     prefix="/api"
 )
-
+app.include_router(
+    adopciones.router,
+    prefix="/api"
+)
+app.include_router(
+    contactos.router,
+    prefix="/api"
+)

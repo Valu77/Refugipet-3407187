@@ -83,6 +83,7 @@ class MascotaRespuesta(BaseModel):
         from_attributes = True
 
 
+
 # ==========================================
 # ADOPCIONES
 # ==========================================
@@ -90,6 +91,11 @@ class MascotaRespuesta(BaseModel):
 class AdopcionCrear(BaseModel):
 
     mascota_id: int
+    telefono: str
+    ciudad: str
+    vivienda: str
+    otras_mascotas: str
+    motivo: str
 
 
 class AdopcionActualizar(BaseModel):
@@ -102,6 +108,11 @@ class AdopcionRespuesta(BaseModel):
     id: int
     usuario_id: int
     mascota_id: int
+    telefono: str
+    ciudad: str
+    vivienda: str
+    otras_mascotas: str
+    motivo: str
     estado: str
     fecha: datetime
 

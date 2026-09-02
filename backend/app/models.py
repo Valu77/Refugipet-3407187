@@ -150,6 +150,31 @@ class Adopcion(Base):
         nullable=False
     )
 
+    telefono = Column(
+        String(30),
+        nullable=False
+    )
+
+    ciudad = Column(
+        String(100),
+        nullable=False
+    )
+
+    vivienda = Column(
+        String(50),
+        nullable=False
+    )
+
+    otras_mascotas = Column(
+        String(10),
+        nullable=False
+    )
+
+    motivo = Column(
+        Text,
+        nullable=False
+    )
+
     estado = Column(
         String(30),
         default="Pendiente",
@@ -170,7 +195,6 @@ class Adopcion(Base):
         "Mascota",
         back_populates="adopciones"
     )
-
 
 # ==========================================
 # CONTACTOS

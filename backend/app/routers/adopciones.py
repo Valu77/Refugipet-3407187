@@ -6,11 +6,9 @@ from fastapi import (
 )
 
 from sqlalchemy.orm import Session
-
 from typing import List
 
 from ..database import get_db
-
 from ..models import (
     Adopcion,
     Mascota,
@@ -35,10 +33,6 @@ router = APIRouter(
 )
 
 
-# ==========================================
-# CREAR SOLICITUD DE ADOPCIÓN
-# ==========================================
-
 @router.post(
     "/",
     response_model=AdopcionRespuesta,
@@ -49,7 +43,6 @@ def crear_adopcion(
     db: Session = Depends(get_db),
     usuario: Usuario = Depends(get_current_user)
 ):
-
     mascota = db.query(
         Mascota
     ).filter(
@@ -57,14 +50,12 @@ def crear_adopcion(
     ).first()
 
     if not mascota:
-
         raise HTTPException(
             status_code=404,
             detail="Mascota no encontrada"
         )
 
     if mascota.estado != "Disponible":
-
         raise HTTPException(
             status_code=400,
             detail="Esta mascota no está disponible"
@@ -73,22 +64,20 @@ def crear_adopcion(
     adopcion = Adopcion(
         usuario_id=usuario.id,
         mascota_id=datos.mascota_id,
+        telefono=datos.telefono,
+        ciudad=datos.ciudad,
+        vivienda=datos.vivienda,
+        otras_mascotas=datos.otras_mascotas,
+        motivo=datos.motivo,
         estado="Pendiente"
     )
 
     db.add(adopcion)
-
     db.commit()
-
     db.refresh(adopcion)
 
     return adopcion
 
-
-# ==========================================
-# VER TODAS LAS ADOPCIONES
-# SOLO ADMIN
-# ==========================================
 
 @router.get(
     "/",
@@ -96,9 +85,8 @@ def crear_adopcion(
 )
 def obtener_adopciones(
     db: Session = Depends(get_db),
-    admin = Depends(get_current_admin)
+    admin=Depends(get_current_admin)
 ):
-
     adopciones = db.query(
         Adopcion
     ).order_by(
@@ -108,11 +96,6 @@ def obtener_adopciones(
     return adopciones
 
 
-# ==========================================
-# CAMBIAR ESTADO
-# SOLO ADMIN
-# ==========================================
-
 @router.put(
     "/{adopcion_id}",
     response_model=AdopcionRespuesta
@@ -121,9 +104,8 @@ def actualizar_adopcion(
     adopcion_id: int,
     datos: AdopcionActualizar,
     db: Session = Depends(get_db),
-    admin = Depends(get_current_admin)
+    admin=Depends(get_current_admin)
 ):
-
     adopcion = db.query(
         Adopcion
     ).filter(
@@ -131,7 +113,6 @@ def actualizar_adopcion(
     ).first()
 
     if not adopcion:
-
         raise HTTPException(
             status_code=404,
             detail="Solicitud no encontrada"
@@ -144,7 +125,6 @@ def actualizar_adopcion(
     ]
 
     if datos.estado not in estados_validos:
-
         raise HTTPException(
             status_code=400,
             detail="Estado inválido"
@@ -153,7 +133,6 @@ def actualizar_adopcion(
     adopcion.estado = datos.estado
 
     if datos.estado == "Aprobada":
-
         mascota = db.query(
             Mascota
         ).filter(
@@ -161,11 +140,9 @@ def actualizar_adopcion(
         ).first()
 
         if mascota:
-
             mascota.estado = "Adoptada"
 
     db.commit()
-
     db.refresh(adopcion)
 
     return adopcion
