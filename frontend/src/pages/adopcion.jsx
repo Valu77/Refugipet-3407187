@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import Navbar from "../components/Navbar";
+import Footer from "../components/Footer";
 import "../adopcion.css";
-import logo from "../assets/logo.png";
 
 const API_URL = "http://127.0.0.1:8000/api";
 
@@ -34,7 +35,6 @@ function Adopcion() {
       }
 
       const datos = await respuesta.json();
-
       setMascotas(datos);
     } catch (err) {
       console.error(err);
@@ -55,20 +55,17 @@ function Adopcion() {
 
     const coincideTipo =
       tipo === "Todos" ||
-      mascota.tipo
-        .toLowerCase()
-        .includes(tipo.toLowerCase());
+      (mascota.tipo && mascota.tipo.toLowerCase().includes(tipo.toLowerCase()));
 
     const coincideTamaño =
       tamaño === "Todos" ||
-      mascota.tamaño === tamaño;
+      mascota.tamaño === tamaño ||
+      mascota.tamano === tamaño;
 
     const coincideEdad =
       edad === "Todas" ||
       (edad === "Cachorro" && mascota.edad <= 1) ||
-      (edad === "Joven" &&
-        mascota.edad >= 2 &&
-        mascota.edad <= 3) ||
+      (edad === "Joven" && mascota.edad >= 2 && mascota.edad <= 3) ||
       (edad === "Adulto" && mascota.edad >= 4);
 
     return (
@@ -87,484 +84,218 @@ function Adopcion() {
   };
 
   return (
-    <div className="adopcion-page">
+    <div className="adopcion-page-wrapper">
+      <Navbar variant="app" />
 
-      {/* NAVBAR */}
-
-      <header className="adopcion-navbar">
-
-        <Link
-          to="/principal"
-          className="adopcion-logo"
-        >
-
-          <img
-            src={logo}
-            alt="Logo RefugiPet"
-            className="adopcion-logo-img"
-          />
-
-          <div className="logo-texto">
-
-            <strong>
-              RefugiPet
-            </strong>
-
-            <span>
-              Juntos construimos un hogar para cada mascota
-            </span>
-
+      <main className="adopcion-main-content">
+        {/* HEADER HERO */}
+        <section className="adopcion-hero-banner">
+          <div className="container">
+            <span className="hero-pill-badge">🐾 CATÁLOGO DE ADOPCIÓN</span>
+            <h1>
+              Encuentra a tu <span>compañero ideal</span>
+            </h1>
+            <p>
+              Explora nuestras mascotas disponibles y brinda una segunda oportunidad a un amigo que busca un hogar lleno de amor y cuidado.
+            </p>
           </div>
-
-        </Link>
-
-        <nav className="adopcion-menu">
-
-          <Link to="/principal">
-            Inicio
-          </Link>
-
-          <Link to="/adopcion">
-            Mascotas
-          </Link>
-
-          <a href="#contacto">
-            Contacto
-          </a>
-
-          <Link to="/">
-            Cerrar sesion
-          </Link>
-
-        </nav>
-
-      </header>
-
-
-      {/* CONTENIDO */}
-
-      <main className="adopcion-contenido">
-
-        {/* INTRODUCCIÓN */}
-
-        <section className="adopcion-intro">
-
-          <span className="adopcion-etiqueta">
-            ADOPTA CON AMOR
-          </span>
-
-          <h1>
-            Encuentra a tu nuevo
-            <span> mejor amigo</span> 🐾
-          </h1>
-
-          <p>
-            Conoce nuestras mascotas disponibles para
-            adopción y encuentra el compañero ideal para
-            tu hogar.
-          </p>
-
         </section>
 
-
-        {/* FILTROS */}
-
-        <section className="filtros">
-
-          <div className="buscador">
-
-            <span className="icono-busqueda">
-              🔍
-            </span>
-
-            <input
-              type="text"
-              placeholder="Buscar mascota por nombre..."
-              value={busqueda}
-              onChange={(e) =>
-                setBusqueda(e.target.value)
-              }
-            />
-
-          </div>
-
-
-          <div className="filtros-select">
-
-            <select
-              value={tipo}
-              onChange={(e) =>
-                setTipo(e.target.value)
-              }
-            >
-
-              <option value="Todos">
-                Todos los tipos
-              </option>
-
-              <option value="Perro">
-                Perros
-              </option>
-
-              <option value="Gato">
-                Gatos
-              </option>
-
-              <option value="Ave">
-                Aves
-              </option>
-
-              <option value="Conejo">
-                Conejos
-              </option>
-
-            </select>
-
-
-            <select
-              value={tamaño}
-              onChange={(e) =>
-                setTamaño(e.target.value)
-              }
-            >
-
-              <option value="Todos">
-                Todos los tamaños
-              </option>
-
-              <option value="Pequeño">
-                Pequeño
-              </option>
-
-              <option value="Mediano">
-                Mediano
-              </option>
-
-              <option value="Grande">
-                Grande
-              </option>
-
-            </select>
-
-
-            <select
-              value={edad}
-              onChange={(e) =>
-                setEdad(e.target.value)
-              }
-            >
-
-              <option value="Todas">
-                Todas las edades
-              </option>
-
-              <option value="Cachorro">
-                Cachorro
-              </option>
-
-              <option value="Joven">
-                Joven
-              </option>
-
-              <option value="Adulto">
-                Adulto
-              </option>
-
-            </select>
-
-
-            <button
-              className="limpiar-btn"
-              onClick={limpiarFiltros}
-            >
-              Limpiar filtros
-            </button>
-
-          </div>
-
-        </section>
-
-
-        {/* RESULTADOS */}
-
-        <div className="resultados-header">
-
-          <div>
-
-            <h2>
-              Mascotas disponibles
-            </h2>
-
-            <p>
-              {mascotasFiltradas.length} mascota
-              {mascotasFiltradas.length !== 1
-                ? "s"
-                : ""}{" "}
-              encontrada
-              {mascotasFiltradas.length !== 1
-                ? "s"
-                : ""}
-            </p>
-
-          </div>
-
-        </div>
-
-
-        {/* CARGANDO */}
-
-        {cargando && (
-
-          <div className="sin-resultados">
-
-            <div>
-              🐾
+        <div className="container catalog-container">
+          {/* SEARCH & FILTERS SECTION */}
+          <section className="filtros-card">
+            <div className="search-bar-wrapper">
+              <span className="search-icon">🔍</span>
+              <input
+                type="text"
+                placeholder="Buscar mascota por nombre..."
+                value={busqueda}
+                onChange={(e) => setBusqueda(e.target.value)}
+                className="search-input"
+              />
+              {busqueda && (
+                <button
+                  className="clear-search-btn"
+                  onClick={() => setBusqueda("")}
+                  title="Limpiar búsqueda"
+                >
+                  ✕
+                </button>
+              )}
             </div>
 
-            <h3>
-              Cargando mascotas...
-            </h3>
-
-          </div>
-
-        )}
-
-
-        {/* ERROR */}
-
-        {!cargando && error && (
-
-          <div className="sin-resultados">
-
-            <div>
-              ⚠️
-            </div>
-
-            <h3>
-              No se pudieron cargar las mascotas
-            </h3>
-
-            <p>
-              {error}
-            </p>
-
-            <button onClick={cargarMascotas}>
-              Intentar nuevamente
-            </button>
-
-          </div>
-
-        )}
-
-
-        {/* SIN RESULTADOS */}
-
-        {!cargando &&
-          !error &&
-          mascotasFiltradas.length === 0 && (
-
-            <div className="sin-resultados">
-
-              <div>
-                🐾
+            <div className="filters-select-grid">
+              <div className="select-group">
+                <label htmlFor="tipo-filter">Especie / Tipo</label>
+                <select
+                  id="tipo-filter"
+                  value={tipo}
+                  onChange={(e) => setTipo(e.target.value)}
+                >
+                  <option value="Todos">Todos los tipos</option>
+                  <option value="Perro">Perros</option>
+                  <option value="Gato">Gatos</option>
+                  <option value="Ave">Aves</option>
+                  <option value="Conejo">Conejos</option>
+                </select>
               </div>
 
-              <h3>
-                No encontramos mascotas
-              </h3>
+              <div className="select-group">
+                <label htmlFor="tamano-filter">Tamaño</label>
+                <select
+                  id="tamano-filter"
+                  value={tamaño}
+                  onChange={(e) => setTamaño(e.target.value)}
+                >
+                  <option value="Todos">Todos los tamaños</option>
+                  <option value="Pequeño">Pequeño</option>
+                  <option value="Mediano">Mediano</option>
+                  <option value="Grande">Grande</option>
+                </select>
+              </div>
 
-              <p>
-                Intenta cambiar los filtros de búsqueda.
-              </p>
+              <div className="select-group">
+                <label htmlFor="edad-filter">Etapa de vida</label>
+                <select
+                  id="edad-filter"
+                  value={edad}
+                  onChange={(e) => setEdad(e.target.value)}
+                >
+                  <option value="Todas">Todas las edades</option>
+                  <option value="Cachorro">Cachorro (&le; 1 año)</option>
+                  <option value="Joven">Joven (2-3 años)</option>
+                  <option value="Adulto">Adulto (&ge; 4 años)</option>
+                </select>
+              </div>
 
-              <button onClick={limpiarFiltros}>
+              <button
+                className="btn-limpiar-filtros"
+                onClick={limpiarFiltros}
+              >
                 Limpiar filtros
               </button>
-
             </div>
+          </section>
 
+          {/* RESULTS METRICS */}
+          <div className="results-counter-bar">
+            <h2>Mascotas disponibles</h2>
+            <span className="counter-chip">
+              {mascotasFiltradas.length} {mascotasFiltradas.length === 1 ? "mascota encontrada" : "mascotas encontradas"}
+            </span>
+          </div>
+
+          {/* SKELETON LOADING STATE */}
+          {cargando && (
+            <div className="mascotas-grid">
+              {[1, 2, 3, 4, 5, 6].map((idx) => (
+                <div key={idx} className="skeleton-card">
+                  <div className="skeleton skeleton-image"></div>
+                  <div className="skeleton skeleton-text medium"></div>
+                  <div className="skeleton skeleton-text short"></div>
+                  <div className="skeleton skeleton-text"></div>
+                </div>
+              ))}
+            </div>
           )}
 
+          {/* SERVER ERROR STATE WITH RETRY */}
+          {!cargando && error && (
+            <div className="state-box">
+              <div className="state-box-icon">⚠️</div>
+              <h3>No se pudieron cargar las mascotas</h3>
+              <p>{error}</p>
+              <button onClick={cargarMascotas} className="btn-retry">
+                Intentar nuevamente
+              </button>
+            </div>
+          )}
 
-        {/* MASCOTAS */}
+          {/* EMPTY FILTER RESULTS STATE */}
+          {!cargando && !error && mascotasFiltradas.length === 0 && (
+            <div className="state-box">
+              <div className="state-box-icon">🐶</div>
+              <h3>No encontramos mascotas que coincidan</h3>
+              <p>Intenta ajustar los criterios de búsqueda o limpia los filtros aplicados.</p>
+              <button onClick={limpiarFiltros} className="btn-retry">
+                Limpiar filtros
+              </button>
+            </div>
+          )}
 
-        {!cargando &&
-          !error &&
-          mascotasFiltradas.length > 0 && (
-
+          {/* PET CATALOG GRID */}
+          {!cargando && !error && mascotasFiltradas.length > 0 && (
             <div className="mascotas-grid">
-
               {mascotasFiltradas.map((mascota) => (
-
-                <article
-                  className="mascota-card"
-                  key={mascota.id}
-                >
-
-                  {/* IMAGEN */}
-
-                  <div className="mascota-imagen">
-
-                    {mascota.estado !== "Adoptada" && (
-
-                      <span className="disponible">
-                        Disponible
-                      </span>
-
+                <article className="pet-catalog-card" key={mascota.id}>
+                  <div className="pet-card-image-box">
+                    {mascota.estado !== "Adoptada" ? (
+                      <span className="badge-status disponible">Disponible</span>
+                    ) : (
+                      <span className="badge-status adoptado">Adoptada</span>
                     )}
 
                     {mascota.imagen ? (
-
                       <img
                         src={mascota.imagen}
                         alt={mascota.nombre}
+                        className="pet-image"
+                        onError={(e) => {
+                          e.target.style.display = "none";
+                          e.target.nextSibling.style.display = "flex";
+                        }}
                       />
+                    ) : null}
 
-                    ) : (
-
-                      <div className="mascota-emoji">
-                        {emojiPorTipo[mascota.tipo] || "🐾"}
-                      </div>
-
-                    )}
-
+                    <div
+                      className="pet-emoji-fallback"
+                      style={{ display: mascota.imagen ? "none" : "flex" }}
+                    >
+                      {emojiPorTipo[mascota.tipo] || "🐾"}
+                    </div>
                   </div>
 
-
-                  {/* INFORMACIÓN */}
-
-                  <div className="mascota-info">
-
-                    <div className="nombre-mascota">
-
-                      <h3>
-                        {mascota.nombre}
-                      </h3>
-
-                      <span>
-                        {emojiPorTipo[mascota.tipo] || "🐾"}
-                      </span>
-
+                  <div className="pet-card-content">
+                    <div className="pet-header">
+                      <h3>{mascota.nombre}</h3>
+                      <span className="pet-emoji-tag">{emojiPorTipo[mascota.tipo] || "🐾"}</span>
                     </div>
 
-
-                    <div className="datos-mascota">
-
-                      <span>
-                        Tipo: {mascota.tipo}
+                    <div className="pet-tags-list">
+                      <span className="tag-pill">{mascota.tipo}</span>
+                      <span className="tag-pill">
+                        {mascota.edad} {mascota.edad === 1 ? "año" : "años"}
                       </span>
-
-                      <span>
-                        Edad: {mascota.edad}{" "}
-                        {mascota.edad === 1
-                          ? "año"
-                          : "años"}
-                      </span>
-
-                      <span>
-                        Tamaño: {mascota.tamaño}
-                      </span>
-
-                      {mascota.raza && (
-                        <span>
-                          Raza: {mascota.raza}
-                        </span>
-                      )}
-
+                      {mascota.tamaño || mascota.tamano ? (
+                        <span className="tag-pill">{mascota.tamaño || mascota.tamano}</span>
+                      ) : null}
                     </div>
 
-
-                    {/* SOLICITAR ADOPCIÓN */}
+                    {mascota.descripcion && (
+                      <p className="pet-description">{mascota.descripcion}</p>
+                    )}
 
                     {mascota.estado === "Adoptada" ? (
-
-                      <button
-                        className="informacion-btn"
-                        disabled
-                      >
+                      <button className="btn-adopt-disabled" disabled>
                         Ya adoptada
                       </button>
-
                     ) : (
-
                       <Link
                         to={`/solicitar-adopcion/${mascota.id}`}
-                        className="informacion-btn"
+                        className="btn-adopt-action"
                       >
-                        Solicitar adopcion
+                        Solicitar adopción
                       </Link>
-
                     )}
-
                   </div>
-
                 </article>
-
               ))}
-
             </div>
-
           )}
-
-
-        {/* INFORMACIÓN */}
-
-        <section
-          className="adopcion-info"
-          id="contacto"
-        >
-
-          <div className="info-icon">
-            🐾
-          </div>
-
-          <div>
-
-            <h2>
-              ¿Por qué adoptar?
-            </h2>
-
-            <p>
-              Adoptar una mascota es darle una segunda
-              oportunidad y brindarle un hogar lleno de
-              amor. En RefugiPet te ayudamos a encontrar
-              el compañero ideal para ti.
-            </p>
-
-          </div>
-
-        </section>
-
+        </div>
       </main>
 
-
-      {/* FOOTER */}
-
-      <footer className="adopcion-footer">
-
-        <div className="footer-logo">
-
-          <img
-            src={logo}
-            alt="Logo RefugiPet"
-          />
-
-          <strong>
-            RefugiPet
-          </strong>
-
-        </div>
-
-        <p>
-          © 2026 RefugiPet - Todos los derechos reservados
-        </p>
-
-        <span>
-          Juntos construimos un hogar para cada mascota
-        </span>
-
-      </footer>
-
+      <Footer />
     </div>
   );
 }

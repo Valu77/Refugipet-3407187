@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
+import Navbar from "../components/Navbar";
+import Footer from "../components/Footer";
 import "../solicitarAdopcion.css";
-import logo from "../assets/logo.png";
 
 function SolicitarAdopcion() {
   const { id } = useParams();
@@ -45,43 +46,34 @@ function SolicitarAdopcion() {
     }
 
     try {
-      const respuesta = await fetch(
-        "http://127.0.0.1:8000/api/adopciones/",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            mascota_id: Number(id),
-            telefono: formulario.telefono,
-            ciudad: formulario.ciudad,
-            vivienda: formulario.vivienda,
-            otras_mascotas: formulario.otrasMascotas,
-            motivo: formulario.motivo,
-          }),
-        }
-      );
+      const respuesta = await fetch("http://127.0.0.1:8000/api/adopciones/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          mascota_id: Number(id),
+          telefono: formulario.telefono,
+          ciudad: formulario.ciudad,
+          vivienda: formulario.vivienda,
+          otras_mascotas: formulario.otrasMascotas,
+          motivo: formulario.motivo,
+        }),
+      });
 
       const datos = await respuesta.json();
 
       if (!respuesta.ok) {
         console.error("Error del servidor:", datos);
-
-        setError(
-          datos.detail || "No se pudo enviar la solicitud de adopción."
-        );
-
+        setError(datos.detail || "No se pudo enviar la solicitud de adopción.");
         return;
       }
 
       console.log("Solicitud guardada:", datos);
-
       setEnviado(true);
     } catch (err) {
       console.error("Error de conexión:", err);
-
       setError(
         "No se pudo conectar con el servidor. Verifica que el backend esté funcionando."
       );
@@ -91,340 +83,198 @@ function SolicitarAdopcion() {
   };
 
   return (
-    <div className="solicitar-page">
+    <div className="solicitar-page-container">
+      <Navbar variant="app" />
 
-      {/* HEADER */}
-      <header className="solicitar-header">
-        <div className="solicitar-container">
-
-          <Link
-            to="/principal"
-            className="solicitar-marca"
-          >
-            <img
-              src={logo}
-              alt="Logo RefugiPet"
-              className="solicitar-logo"
-            />
-
-            <div>
-              <h1>RefugiPet</h1>
-
-              <p>
-                Juntos construimos un hogar para cada mascota
-              </p>
-            </div>
-          </Link>
-
-          <nav className="solicitar-nav">
-
-            <Link to="/principal">
-              Inicio
-            </Link>
-
-            <Link to="/adopcion">
-              Mascotas
-            </Link>
-
-            <Link to="/contacto">
-              Contacto
-            </Link>
-
-            <Link to="/">
-              Cerrar sesion
-            </Link>
-
-          </nav>
-        </div>
-      </header>
-
-      {/* CONTENIDO */}
-      <main className="solicitar-main">
-
-        <section className="solicitar-seccion">
-
-          <div className="solicitar-titulo">
-
-            <span>🐾</span>
-
-            <h2>
-              Solicitud de adopción
-            </h2>
-
+      <main className="solicitar-main-content">
+        <section className="solicitar-hero-banner">
+          <div className="container">
+            <span className="solicitar-badge">🐾 PROCESO DE ADOPCIÓN</span>
+            <h1>Solicitud de <span>Adopción</span></h1>
             <p>
-              Completa el siguiente formulario para iniciar
-              el proceso de adopción.
+              Completa la información a continuación para iniciar la solicitud. Queremos asegurarnos de que la mascota llegue al hogar ideal.
             </p>
-
           </div>
-
-          {!enviado ? (
-
-            <form
-              className="solicitar-formulario"
-              onSubmit={handleSubmit}
-            >
-
-              {/* DATOS PERSONALES */}
-              <h3>
-                Datos personales
-              </h3>
-
-              <div className="formulario-fila">
-
-                <div className="campo">
-
-                  <label>
-                    Nombre completo
-                  </label>
-
-                  <input
-                    type="text"
-                    name="nombre"
-                    placeholder="Escribe tu nombre completo"
-                    value={formulario.nombre}
-                    onChange={handleChange}
-                    required
-                  />
-
-                </div>
-
-                <div className="campo">
-
-                  <label>
-                    Correo electrónico
-                  </label>
-
-                  <input
-                    type="email"
-                    name="correo"
-                    placeholder="ejemplo@correo.com"
-                    value={formulario.correo}
-                    onChange={handleChange}
-                    required
-                  />
-
-                </div>
-
-              </div>
-
-              <div className="formulario-fila">
-
-                <div className="campo">
-
-                  <label>
-                    Teléfono
-                  </label>
-
-                  <input
-                    type="tel"
-                    name="telefono"
-                    placeholder="Número de teléfono"
-                    value={formulario.telefono}
-                    onChange={handleChange}
-                    required
-                  />
-
-                </div>
-
-                <div className="campo">
-
-                  <label>
-                    Ciudad
-                  </label>
-
-                  <input
-                    type="text"
-                    name="ciudad"
-                    placeholder="Ciudad donde vives"
-                    value={formulario.ciudad}
-                    onChange={handleChange}
-                    required
-                  />
-
-                </div>
-
-              </div>
-
-              {/* INFORMACIÓN DEL HOGAR */}
-              <h3>
-                Información del hogar
-              </h3>
-
-              <div className="formulario-fila">
-
-                <div className="campo">
-
-                  <label>
-                    Tipo de vivienda
-                  </label>
-
-                  <select
-                    name="vivienda"
-                    value={formulario.vivienda}
-                    onChange={handleChange}
-                  >
-
-                    <option value="Casa">
-                      Casa
-                    </option>
-
-                    <option value="Apartamento">
-                      Apartamento
-                    </option>
-
-                    <option value="Finca">
-                      Finca
-                    </option>
-
-                    <option value="Otro">
-                      Otro
-                    </option>
-
-                  </select>
-
-                </div>
-
-                <div className="campo">
-
-                  <label>
-                    ¿Tienes otras mascotas?
-                  </label>
-
-                  <select
-                    name="otrasMascotas"
-                    value={formulario.otrasMascotas}
-                    onChange={handleChange}
-                  >
-
-                    <option value="No">
-                      No
-                    </option>
-
-                    <option value="Si">
-                      Sí
-                    </option>
-
-                  </select>
-
-                </div>
-
-              </div>
-
-              {/* MOTIVO */}
-              <div className="campo">
-
-                <label>
-                  ¿Por qué deseas adoptar?
-                </label>
-
-                <textarea
-                  name="motivo"
-                  placeholder="Cuéntanos por qué quieres adoptar esta mascota..."
-                  value={formulario.motivo}
-                  onChange={handleChange}
-                  rows="5"
-                  required
-                ></textarea>
-
-              </div>
-
-              {/* ERROR */}
-              {error && (
-                <p
-                  style={{
-                    color: "red",
-                    textAlign: "center",
-                    marginTop: "15px",
-                  }}
-                >
-                  {error}
-                </p>
-              )}
-
-              {/* BOTONES */}
-              <div className="solicitar-botones">
-
-                <button
-                  type="button"
-                  className="boton-volver"
-                  onClick={() => navigate("/adopcion")}
-                  disabled={cargando}
-                >
-                  Volver
-                </button>
-
-                <button
-                  type="submit"
-                  className="boton-solicitar"
-                  disabled={cargando}
-                >
-                  {cargando
-                    ? "Enviando..."
-                    : "Enviar solicitud"}
-                </button>
-
-              </div>
-
-            </form>
-
-          ) : (
-
-            <div className="solicitud-exitosa">
-
-              <div className="exito-icono">
-                ✅
-              </div>
-
-              <h2>
-                ¡Solicitud enviada!
-              </h2>
-
-              <p>
-                Tu solicitud de adopción fue enviada
-                correctamente.
-              </p>
-
-              <p>
-                El equipo de RefugiPet revisará la información
-                y se pondrá en contacto contigo.
-              </p>
-
-              <div className="exito-botones">
-
-                <Link
-                  to="/adopcion"
-                  className="boton-solicitar"
-                >
-                  Volver a mascotas
-                </Link>
-
-                <Link
-                  to="/principal"
-                  className="boton-volver"
-                >
-                  Ir al inicio
-                </Link>
-
-              </div>
-
-            </div>
-
-          )}
-
         </section>
 
+        <section className="container solicitar-form-wrapper">
+          {!enviado ? (
+            <div className="solicitar-card">
+              <form onSubmit={handleSubmit} className="solicitar-form">
+                {/* SECCIÓN 1: DATOS PERSONALES */}
+                <div className="form-section-header">
+                  <span className="section-step-num">1</span>
+                  <h3>Datos personales</h3>
+                </div>
+
+                <div className="solicitar-grid-2">
+                  <div className="form-group">
+                    <label htmlFor="nombre">
+                      Nombre completo <span className="required-star">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      id="nombre"
+                      name="nombre"
+                      placeholder="Escribe tu nombre completo"
+                      value={formulario.nombre}
+                      onChange={handleChange}
+                      required
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label htmlFor="correo">
+                      Correo electrónico <span className="required-star">*</span>
+                    </label>
+                    <input
+                      type="email"
+                      id="correo"
+                      name="correo"
+                      placeholder="ejemplo@correo.com"
+                      value={formulario.correo}
+                      onChange={handleChange}
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="solicitar-grid-2">
+                  <div className="form-group">
+                    <label htmlFor="telefono">
+                      Teléfono <span className="required-star">*</span>
+                    </label>
+                    <input
+                      type="tel"
+                      id="telefono"
+                      name="telefono"
+                      placeholder="Número de teléfono de contacto"
+                      value={formulario.telefono}
+                      onChange={handleChange}
+                      required
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label htmlFor="ciudad">
+                      Ciudad <span className="required-star">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      id="ciudad"
+                      name="ciudad"
+                      placeholder="Ciudad de residencia"
+                      value={formulario.ciudad}
+                      onChange={handleChange}
+                      required
+                    />
+                  </div>
+                </div>
+
+                {/* SECCIÓN 2: INFORMACIÓN DEL HOGAR */}
+                <div className="form-section-header margin-top">
+                  <span className="section-step-num">2</span>
+                  <h3>Información del hogar</h3>
+                </div>
+
+                <div className="solicitar-grid-2">
+                  <div className="form-group">
+                    <label htmlFor="vivienda">Tipo de vivienda</label>
+                    <select
+                      id="vivienda"
+                      name="vivienda"
+                      value={formulario.vivienda}
+                      onChange={handleChange}
+                    >
+                      <option value="Casa">Casa</option>
+                      <option value="Apartamento">Apartamento</option>
+                      <option value="Finca">Finca</option>
+                      <option value="Otro">Otro</option>
+                    </select>
+                  </div>
+
+                  <div className="form-group">
+                    <label htmlFor="otrasMascotas">¿Tienes otras mascotas?</label>
+                    <select
+                      id="otrasMascotas"
+                      name="otrasMascotas"
+                      value={formulario.otrasMascotas}
+                      onChange={handleChange}
+                    >
+                      <option value="No">No</option>
+                      <option value="Si">Sí</option>
+                    </select>
+                  </div>
+                </div>
+
+                {/* SECCIÓN 3: MOTIVACIÓN */}
+                <div className="form-section-header margin-top">
+                  <span className="section-step-num">3</span>
+                  <h3>Motivo de adopción</h3>
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="motivo">
+                    ¿Por qué deseas adoptar a esta mascota? <span className="required-star">*</span>
+                  </label>
+                  <textarea
+                    id="motivo"
+                    name="motivo"
+                    placeholder="Cuéntanos brevemente las razones para adoptar y la experiencia previa con animales..."
+                    value={formulario.motivo}
+                    onChange={handleChange}
+                    rows="4"
+                    required
+                  ></textarea>
+                </div>
+
+                {error && <div className="form-error-alert">⚠️ {error}</div>}
+
+                <div className="solicitar-actions">
+                  <button
+                    type="button"
+                    className="btn-solicitar-back"
+                    onClick={() => navigate("/adopcion")}
+                    disabled={cargando}
+                  >
+                    ← Volver a catálogo
+                  </button>
+
+                  <button
+                    type="submit"
+                    className="btn-solicitar-submit"
+                    disabled={cargando}
+                  >
+                    {cargando ? "Enviando solicitud..." : "Enviar solicitud"}
+                  </button>
+                </div>
+              </form>
+            </div>
+          ) : (
+            <div className="solicitud-exito-card">
+              <div className="exito-badge">✅</div>
+              <h2>¡Solicitud enviada con éxito!</h2>
+              <p>
+                Tu solicitud de adopción ha sido recibida correctamente por nuestro equipo.
+              </p>
+              <p className="subtext">
+                Evaluaremos los datos proporcionados y te contactaremos por correo o teléfono en el menor tiempo posible.
+              </p>
+
+              <div className="exito-buttons-group">
+                <Link to="/adopcion" className="btn-exito-primary">
+                  Explorar más mascotas
+                </Link>
+                <Link to="/principal" className="btn-exito-secondary">
+                  Ir al inicio
+                </Link>
+              </div>
+            </div>
+          )}
+        </section>
       </main>
 
-      {/* FOOTER */}
-      <footer className="solicitar-footer">
-
-        <p>
-          © 2026 RefugiPet - Todos los derechos reservados
-        </p>
-
-      </footer>
-
+      <Footer />
     </div>
   );
 }

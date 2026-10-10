@@ -1,7 +1,8 @@
-import "../principal.css";
-import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
-import logo from "../assets/logo.png";
+import { Link } from "react-router-dom";
+import Navbar from "../components/Navbar";
+import Footer from "../components/Footer";
+import "../principal.css";
 
 const emojiPorTipo = {
   Perro: "🐶",
@@ -15,163 +16,202 @@ function Principal() {
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState("");
 
-  useEffect(() => {
-    const cargarMascotas = async () => {
-      try {
-        const respuesta = await fetch("http://127.0.0.1:8000/api/mascotas/");
+  const cargarMascotas = async () => {
+    setCargando(true);
+    setError("");
 
-        if (!respuesta.ok) {
-          throw new Error("No se pudieron cargar las mascotas");
-        }
+    try {
+      const respuesta = await fetch("http://127.0.0.1:8000/api/mascotas/");
 
-        const datos = await respuesta.json();
-        setMascotas(datos);
-      } catch (err) {
-        setError("No se pudo conectar con el servidor.");
-      } finally {
-        setCargando(false);
+      if (!respuesta.ok) {
+        throw new Error("No se pudieron cargar las mascotas");
       }
-    };
 
+      const datos = await respuesta.json();
+      setMascotas(datos);
+    } catch (err) {
+      setError("No se pudo conectar con el servidor.");
+    } finally {
+      setCargando(false);
+    }
+  };
+
+  useEffect(() => {
     cargarMascotas();
   }, []);
 
-  // Mostramos solo las primeras 4 en la vista principal
   const mascotasDestacadas = mascotas.slice(0, 4);
 
   return (
-    <>
-      {/* ================= HEADER ================= */}
+    <div className="principal-page-container">
+      <Navbar variant="app" />
 
-      <header className="principal-header">
-        <div className="principal-container">
-          <div className="principal-marca">
-            <img src={logo} alt="Logo RefugioPet" className="principal-logo" />
+      <main className="principal-main">
+        {/* HERO SECTION */}
+        <section className="hero-principal">
+          <div className="container hero-principal-content">
+            <div className="hero-text-wrapper">
+              <span className="hero-badge">💙 BIENVENIDO A REFUGIPET</span>
+              <h1>Encuentra a tu nuevo <span>mejor amigo</span></h1>
+              <p>
+                Nos alegra tenerte en nuestra comunidad. Explora las mascotas disponibles y descubre algunos de nuestros amigos que están esperando encontrar una familia y un hogar lleno de amor.
+              </p>
 
-            <div>
-              <h1>RefugiPet</h1>
-              <p>Juntos construimos un hogar para cada mascota</p>
+              <div className="hero-principal-buttons">
+                <Link to="/adopcion" className="btn-primary-lg">
+                  Encontrar mi mascota
+                </Link>
+                <Link to="/contacto" className="btn-secondary-lg">
+                  Conoce el proceso
+                </Link>
+              </div>
+            </div>
+
+            <div className="hero-stats-card">
+              <div className="stat-item">
+                <span className="stat-number">100+</span>
+                <span className="stat-label">Mascotas adoptadas</span>
+              </div>
+              <div className="stat-divider"></div>
+              <div className="stat-item">
+                <span className="stat-number">24/7</span>
+                <span className="stat-label">Cuidado amoroso</span>
+              </div>
             </div>
           </div>
-
-          <nav className="principal-nav">
-            <Link to="/adopcion">Mascotas</Link>
-            <Link to="/adopcion">Adopcion</Link>
-            <Link to="/contacto">Contacto</Link>
-            <Link to="/">Cerrar Sesion</Link>
-          </nav>
-        </div>
-      </header>
-
-      {/* ================= CONTENIDO ================= */}
-
-      <main>
-        <section className="bienvenida-principal">
-          <div className="bienvenida-contenido">
-            <h2>Bienvenido a RefugiPet</h2>
-
-            <p>
-              Nos alegra tenerte en nuestra comunidad. Explora las mascotas
-              disponibles y descubre algunos de nuestros amigos que estan
-              esperando encontrar una familia y un hogar lleno de amor.
-            </p>
-          </div>
         </section>
 
-        {/* ================= MASCOTAS ================= */}
+        {/* MASCOTAS DESTACADAS */}
+        <section className="mascotas-destacadas-section">
+          <div className="container">
+            <div className="section-header center">
+              <h2>Ellos esperan por ti</h2>
+              <p>Conoce algunos de nuestros amigos que están esperando encontrar un hogar.</p>
+            </div>
 
-        <section className="mascotas" id="mascotas">
-          <h2>Mascotas disponibles para adopcion</h2>
-
-          <p className="texto-mascotas">
-            Conoce algunos de nuestros amigos que estan esperando encontrar un
-            hogar.
-          </p>
-
-          {cargando && <p>Cargando mascotas...</p>}
-
-          {error && (
-            <p style={{ color: "red", textAlign: "center" }}>{error}</p>
-          )}
-
-          {!cargando && !error && mascotasDestacadas.length === 0 && (
-            <p style={{ textAlign: "center" }}>
-              Todavia no hay mascotas registradas.
-            </p>
-          )}
-
-          <div className="contenedor-mascotas">
-            {mascotasDestacadas.map((mascota) => (
-              <div className="mascota-card" key={mascota.id}>
-                <div className="mascota-imagen">
-                  {mascota.imagen ? (
-                    <img
-                      src={mascota.imagen}
-                      alt={mascota.nombre}
-                      style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                    />
-                  ) : (
-                    emojiPorTipo[mascota.tipo] || "🐾"
-                  )}
-                </div>
-
-                <div className="mascota-info">
-                  <h3>{mascota.nombre}</h3>
-
-                  <p>
-                    {mascota.tipo} · {mascota.edad} anos
-                  </p>
-
-                  <Link to="/adopcion" className="boton-mascota">
-                    Ver informacion
-                  </Link>
-                </div>
+            {/* SKELETON LOADING */}
+            {cargando && (
+              <div className="mascotas-grid-4">
+                {[1, 2, 3, 4].map((i) => (
+                  <div key={i} className="skeleton-card">
+                    <div className="skeleton skeleton-image"></div>
+                    <div className="skeleton skeleton-text medium"></div>
+                    <div className="skeleton skeleton-text short"></div>
+                    <div className="skeleton skeleton-text"></div>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
+            )}
 
-          <div className="boton-ver-mascotas">
-            <Link to="/adopcion">Ver todas las mascotas</Link>
+            {/* ERROR STATE */}
+            {!cargando && error && (
+              <div className="state-box">
+                <div className="state-box-icon">⚠️</div>
+                <h3>Error de conexión</h3>
+                <p>{error}</p>
+                <button onClick={cargarMascotas} className="btn-retry">
+                  Intentar nuevamente
+                </button>
+              </div>
+            )}
+
+            {/* EMPTY STATE */}
+            {!cargando && !error && mascotasDestacadas.length === 0 && (
+              <div className="state-box">
+                <div className="state-box-icon">🐾</div>
+                <h3>No hay mascotas registradas</h3>
+                <p>Pronto tendremos nuevas mascotas listas para encontrar un hogar.</p>
+              </div>
+            )}
+
+            {/* PETS CARDS GRID */}
+            {!cargando && !error && mascotasDestacadas.length > 0 && (
+              <div className="mascotas-grid-4">
+                {mascotasDestacadas.map((mascota) => (
+                  <article className="pet-card" key={mascota.id}>
+                    <div className="pet-card-image-wrapper">
+                      {mascota.estado && mascota.estado !== "Adoptada" && (
+                        <span className="status-badge disponible">Disponible</span>
+                      )}
+                      {mascota.imagen ? (
+                        <img
+                          src={mascota.imagen}
+                          alt={mascota.nombre}
+                          className="pet-card-img"
+                          onError={(e) => {
+                            e.target.style.display = "none";
+                            e.target.nextSibling.style.display = "flex";
+                          }}
+                        />
+                      ) : null}
+                      <div
+                        className="pet-card-emoji-fallback"
+                        style={{ display: mascota.imagen ? "none" : "flex" }}
+                      >
+                        {emojiPorTipo[mascota.tipo] || "🐾"}
+                      </div>
+                    </div>
+
+                    <div className="pet-card-body">
+                      <div className="pet-card-header">
+                        <h3 className="pet-name">{mascota.nombre}</h3>
+                        <span className="pet-type-icon">{emojiPorTipo[mascota.tipo] || "🐾"}</span>
+                      </div>
+
+                      <p className="pet-meta">
+                        <span>{mascota.tipo}</span> · <span>{mascota.edad} {mascota.edad === 1 ? "año" : "años"}</span>
+                      </p>
+
+                      <Link to="/adopcion" className="btn-card-action">
+                        Conocer más
+                      </Link>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            )}
+
+            <div className="view-more-container">
+              <Link to="/adopcion" className="btn-view-all">
+                Ver todas las mascotas 🐾
+              </Link>
+            </div>
           </div>
         </section>
 
-        {/* ================= ADOPCION ================= */}
-
-        <section className="seccion-adopcion">
-          <h2>Adopta y cambia una vida</h2>
-
-          <p>
-            Adoptar es darle una segunda oportunidad a una mascota que
-            necesita amor, cuidado y un hogar.
-          </p>
-
-          <Link to="/adopcion" className="boton-adopcion">
-            Quiero adoptar
-          </Link>
+        {/* ADOPCION BANNER */}
+        <section className="adopcion-banner-section">
+          <div className="container">
+            <div className="adopcion-banner-card">
+              <div className="adopcion-banner-text">
+                <h2>Adopta y cambia una vida</h2>
+                <p>
+                  Adoptar es darle una segunda oportunidad a una mascota que necesita amor, cuidado y un hogar para siempre.
+                </p>
+              </div>
+              <Link to="/adopcion" className="btn-banner-cta">
+                Quiero adoptar
+              </Link>
+            </div>
+          </div>
         </section>
 
-        {/* ================= CONTACTO ================= */}
-
-        <section className="contacto-principal">
-          <h2>Necesitas ayuda?</h2>
-
-          <p>
-            Si tienes alguna pregunta sobre una mascota o sobre el proceso de
-            adopcion, contactanos.
-          </p>
-
-          <Link to="/contacto" className="boton-contacto">
-            Contactanos
-          </Link>
+        {/* AYUDA / CONTACTO PREVIEW */}
+        <section className="ayuda-section">
+          <div className="container text-center">
+            <h2>¿Necesitas ayuda o tienes dudas?</h2>
+            <p>
+              Si tienes alguna pregunta sobre una mascota o sobre el proceso de adopción, contáctanos sin compromiso.
+            </p>
+            <Link to="/contacto" className="btn-contacto-lg">
+              Contactar al equipo
+            </Link>
+          </div>
         </section>
       </main>
 
-      {/* ================= FOOTER ================= */}
-
-      <footer className="principal-footer">
-        <p>© 2026 RefugiPet - Todos los derechos reservados</p>
-      </footer>
-    </>
+      <Footer />
+    </div>
   );
 }
 

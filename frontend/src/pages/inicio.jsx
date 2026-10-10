@@ -1,291 +1,242 @@
-import "../ini.css";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import { useState } from "react";
-
-import logo from "../assets/logo.png";
+import Navbar from "../components/Navbar";
+import Footer from "../components/Footer";
+import "../ini.css";
 
 import carru1 from "../assets/carrusel/carru1.png";
 import carru2 from "../assets/carrusel/carru2 (2).png";
 import carru3 from "../assets/carrusel/carru3 (2).png";
 
 function Inicio() {
-
-  // ================= CONTACTO =================
-
   const [formulario, setFormulario] = useState({
     nombre: "",
     correo: "",
-    mensaje: ""
+    mensaje: "",
   });
 
   const [mensajeEnviado, setMensajeEnviado] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-
     setFormulario({
       ...formulario,
-      [name]: value
+      [name]: value,
     });
-
     setMensajeEnviado(false);
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    // Obtener mensajes que ya existen
     const mensajesGuardados = JSON.parse(
       localStorage.getItem("mensajesContacto") || "[]"
     );
 
-    // Crear nuevo mensaje
     const nuevoMensaje = {
       id: Date.now(),
       nombre: formulario.nombre,
       correo: formulario.correo,
       mensaje: formulario.mensaje,
-      fecha: new Date().toLocaleString()
+      fecha: new Date().toLocaleString(),
     };
 
-    // Agregar el nuevo mensaje
     mensajesGuardados.push(nuevoMensaje);
+    localStorage.setItem("mensajesContacto", JSON.stringify(mensajesGuardados));
 
-    // Guardarlo en localStorage
-    localStorage.setItem(
-      "mensajesContacto",
-      JSON.stringify(mensajesGuardados)
-    );
-
-    // Mostrar confirmación
     setMensajeEnviado(true);
-
-    // Limpiar formulario
     setFormulario({
       nombre: "",
       correo: "",
-      mensaje: ""
+      mensaje: "",
     });
   };
 
   return (
-    <>
-      {/* ================= HEADER ================= */}
+    <div className="landing-page-container">
+      <Navbar variant="public" />
 
-      <header className="header-inicio">
-        <div className="container-header">
+      <main className="landing-main">
+        {/* HERO SECTION */}
+        <section className="hero-landing">
+          <div className="container hero-landing-grid">
+            <div className="hero-landing-text">
+              <span className="hero-badge">🐾 ADOPCIÓN RESPONSABLE</span>
+              <h1 className="hero-landing-title">
+                Encuentra a tu nuevo <span>mejor amigo</span>
+              </h1>
+              <p className="hero-landing-desc">
+                Miles de animales abandonados o rescatados están esperando una oportunidad para llenar tu vida de alegría, compañía y amor incondicional.
+              </p>
+              <div className="hero-landing-cta">
+                <Link to="/iniciosesion" className="btn-hero-primary">
+                  Encontrar mi mascota
+                </Link>
+                <a href="#beneficios" className="btn-hero-secondary">
+                  Conoce el proceso
+                </a>
+              </div>
+            </div>
 
-          {/* LOGO + NOMBRE */}
-          <div className="marca">
+            <div className="hero-landing-gallery">
+              <div className="hero-image-card card-main">
+                <img src={carru1} alt="Mascota buscando hogar" />
+              </div>
+              <div className="hero-image-card card-sub1">
+                <img src={carru2} alt="Gatito en adopción" />
+              </div>
+              <div className="hero-image-card card-sub2">
+                <img src={carru3} alt="Perrito feliz" />
+              </div>
+            </div>
+          </div>
+        </section>
 
-            <img
-              src={logo}
-              alt="Logo Refugipet"
-              className="logo"
-            />
-
-            <div className="texto-marca">
-              <h1>RefugiPet</h1>
-
+        {/* NOSOTROS SECTION */}
+        <section className="nosotros-section">
+          <div className="container">
+            <div className="section-header center">
+              <h2>¿Quiénes Somos?</h2>
               <p>
-                Juntos construimos un hogar para cada mascota
+                RefugiPet es una plataforma dedicada a conectar mascotas que necesitan un hogar con familias amorosas y responsables.
               </p>
             </div>
 
+            <div className="about-cards-grid">
+              <div className="about-card">
+                <div className="about-icon">❤️</div>
+                <h3>Rescate y Cuidado</h3>
+                <p>
+                  Promovemos el rescate, vacunación y protección integral de perros y gatos en situación de vulnerabilidad.
+                </p>
+              </div>
+              <div className="about-card">
+                <div className="about-icon">🏠</div>
+                <h3>Hogares Seguros</h3>
+                <p>
+                  Evaluamos cada solicitud de adopción para garantizar que las mascotas lleguen a entornos seguros y llenos de amor.
+                </p>
+              </div>
+              <div className="about-card">
+                <div className="about-icon">🤝</div>
+                <h3>Comunidad Responsable</h3>
+                <p>
+                  Fomentamos la tenencia responsable y concientizamos sobre la esterilización y cuidado animal.
+                </p>
+              </div>
+            </div>
           </div>
+        </section>
 
-          {/* MENÚ */}
-          <nav>
-            <ul>
+        {/* BENEFICIOS / POR QUE ADOPTAR */}
+        <section className="beneficios-section" id="beneficios">
+          <div className="container">
+            <div className="section-header center">
+              <h2>¿Por qué adoptar?</h2>
+              <p>Descubre el impacto de transformar una vida a través de la adopción</p>
+            </div>
 
-              <li>
-                <Link to="/iniciosesion">
-                  Adopción
-                </Link>
-              </li>
+            <div className="beneficios-grid">
+              <div className="beneficio-card">
+                <div className="beneficio-icon">🐶</div>
+                <h3>Salvas una vida</h3>
+                <p>
+                  Le das una segunda oportunidad a una mascota que ha sufrido abandono o desprotección.
+                </p>
+              </div>
 
-              <li>
-                <Link to="/iniciosesion">
-                  Iniciar Sesión
-                </Link>
-              </li>
+              <div className="beneficio-card highlight">
+                <div className="beneficio-icon">💖</div>
+                <h3>Amor Incondicional</h3>
+                <p>
+                  Una mascota adoptada expresa una gratitud infinita y se convierte en un miembro leal de tu familia.
+                </p>
+              </div>
 
-              <li>
-                <Link to="/registrar">
-                  Registrarse
-                </Link>
-              </li>
-
-            </ul>
-          </nav>
-
-        </div>
-      </header>
-
-
-      {/* ================= CARRUSEL ================= */}
-
-      <section className="slider">
-
-        <div className="slides">
-
-          <div className="slide">
-            <img
-              src={carru1}
-              alt="Mascotas en adopción"
-            />
+              <div className="beneficio-card">
+                <div className="beneficio-icon">🌱</div>
+                <h3>Combates la sobrepoblación</h3>
+                <p>
+                  Contribuyes directamente a frenar la venta indiscriminada y el abandono animal.
+                </p>
+              </div>
+            </div>
           </div>
+        </section>
 
-          <div className="slide">
-            <img
-              src={carru2}
-              alt="Mascotas buscando hogar"
-            />
+        {/* CONTACTO */}
+        <section className="contacto-landing-section">
+          <div className="container">
+            <div className="contacto-card-wrapper">
+              <div className="contacto-info-side">
+                <h2>¿Tienes dudas o comentarios?</h2>
+                <p>
+                  Escríbenos y nuestro equipo te asesorará en todo lo referente al proceso de adopción o voluntariado.
+                </p>
+                <div className="contacto-badge">
+                  <span>✨ Respuestas en menos de 24 horas</span>
+                </div>
+              </div>
+
+              <div className="contacto-form-side">
+                <form onSubmit={handleSubmit} className="landing-form">
+                  <div className="form-group">
+                    <label htmlFor="nombre">Nombre completo</label>
+                    <input
+                      type="text"
+                      id="nombre"
+                      name="nombre"
+                      placeholder="Tu nombre completo"
+                      value={formulario.nombre}
+                      onChange={handleChange}
+                      required
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label htmlFor="correo">Correo electrónico</label>
+                    <input
+                      type="email"
+                      id="correo"
+                      name="correo"
+                      placeholder="ejemplo@correo.com"
+                      value={formulario.correo}
+                      onChange={handleChange}
+                      required
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label htmlFor="mensaje">Mensaje</label>
+                    <textarea
+                      id="mensaje"
+                      name="mensaje"
+                      placeholder="Escribe tu mensaje aquí..."
+                      rows="4"
+                      value={formulario.mensaje}
+                      onChange={handleChange}
+                      required
+                    ></textarea>
+                  </div>
+
+                  <button type="submit" className="btn-submit-landing">
+                    Enviar Mensaje
+                  </button>
+
+                  {mensajeEnviado && (
+                    <div className="form-success-banner">
+                      ¡Gracias! Tu mensaje ha sido enviado correctamente.
+                    </div>
+                  )}
+                </form>
+              </div>
+            </div>
           </div>
+        </section>
+      </main>
 
-          <div className="slide">
-            <img
-              src={carru3}
-              alt="Adopción responsable"
-            />
-          </div>
-
-        </div>
-
-      </section>
-
-
-      {/* ================= NOSOTROS ================= */}
-
-      <section className="nosotros">
-
-        <h2>¿Quiénes Somos?</h2>
-
-        <p>
-          RefugioPet es una plataforma dedicada a conectar mascotas
-          que necesitan un hogar con familias responsables. Nuestro
-          objetivo es promover la adopción responsable y brindar una
-          segunda oportunidad a miles de animales.
-        </p>
-
-      </section>
-
-
-      {/* ================= BENEFICIOS ================= */}
-
-      <section className="beneficios">
-
-        <h2>¿Por qué adoptar?</h2>
-
-        <div className="contenedor-beneficios">
-
-          <div className="card">
-
-            <h3>🐶 Salvas una vida</h3>
-
-            <p>
-              Miles de mascotas esperan una familia que les brinde
-              amor y protección.
-            </p>
-
-          </div>
-
-
-          <div className="card">
-
-            <h3>❤️ Amor incondicional</h3>
-
-            <p>
-              Una mascota adoptada se convierte en un amigo fiel
-              para toda la vida.
-            </p>
-
-          </div>
-
-
-          <div className="card">
-
-            <h3>🏠 Hogar responsable</h3>
-
-            <p>
-              Ayudas a reducir el abandono y mejorar la calidad
-              de vida animal.
-            </p>
-
-          </div>
-
-        </div>
-
-      </section>
-
-
-      {/* ================= CONTACTO ================= */}
-
-      <section className="contacto">
-
-        <h2>Contáctanos</h2>
-
-        <form onSubmit={handleSubmit}>
-
-          <input
-            type="text"
-            name="nombre"
-            placeholder="Nombre completo"
-            value={formulario.nombre}
-            onChange={handleChange}
-            required
-          />
-
-          <input
-            type="email"
-            name="correo"
-            placeholder="Correo electrónico"
-            value={formulario.correo}
-            onChange={handleChange}
-            required
-          />
-
-          <textarea
-            name="mensaje"
-            placeholder="Escribe tu mensaje"
-            value={formulario.mensaje}
-            onChange={handleChange}
-            required
-          ></textarea>
-
-          <button type="submit">
-            Enviar Mensaje
-          </button>
-
-        </form>
-
-        {mensajeEnviado && (
-          <p
-            style={{
-              color: "#20a35a",
-              fontWeight: "bold",
-              marginTop: "15px",
-              textAlign: "center"
-            }}
-          >
-            ¡Mensaje enviado correctamente!
-          </p>
-        )}
-
-      </section>
-
-
-      {/* ================= FOOTER ================= */}
-
-      <footer>
-
-        <p>
-          © 2026 RefugiPet - Todos los derechos reservados
-        </p>
-
-      </footer>
-
-    </>
+      <Footer />
+    </div>
   );
 }
 
