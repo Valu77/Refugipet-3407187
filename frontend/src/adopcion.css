@@ -1,726 +1,371 @@
-/* =========================================
-   REFUGIPET - PÁGINA DE ADOPCIÓN
-========================================= */
-
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-
-html {
-  scroll-behavior: smooth;
-}
-
-body {
-  margin: 0;
-  padding: 0;
-  background: #f4f8fc;
-}
-
-/* =========================================
-   PÁGINA
-========================================= */
-
-.adopcion-page {
+/* Adopcion Catalog Page Styling */
+.adopcion-page-wrapper {
   min-height: 100vh;
-  background: #f4f8fc;
-  color: #333;
-  font-family: "Segoe UI", Arial, Helvetica, sans-serif;
-}
-
-/* =========================================
-   NAVBAR
-========================================= */
-
-.adopcion-navbar {
-  height: 95px;
-  width: 100%;
-  background: #0066b3;
-
-  display: flex;
-  align-items: center;
-
-  padding: 0 20px 0 0;
-  gap: 30px;
-
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-
-  position: sticky;
-  top: 0;
-  z-index: 1000;
-}
-
-/* =========================================
-   LOGO
-========================================= */
-
-.adopcion-logo {
-  height: 95px;
-
-  display: flex;
-  align-items: center;
-
-  gap: 3px;
-
-  text-decoration: none;
-  flex-shrink: 0;
-
-  margin: 0;
-  padding: 0;
-}
-
-.adopcion-logo-img {
-  width: 85px;
-  height: 85px;
-
-  object-fit: contain;
-  display: block;
-
-  margin: 0;
-  padding: 0;
-}
-
-.logo-texto {
   display: flex;
   flex-direction: column;
-  justify-content: center;
-
-  margin: 0;
-  padding: 0;
+  background-color: var(--bg);
 }
 
-.logo-texto strong {
-  color: white;
-
-  font-size: 28px;
-  font-weight: 800;
-
-  line-height: 1;
-
-  margin: 0 0 5px 0;
-}
-
-.logo-texto span {
-  color: white;
-
-  font-size: 10px;
-  font-weight: 600;
-
-  line-height: 1.2;
-
-  white-space: nowrap;
-  margin: 0;
-}
-
-/* =========================================
-   MENÚ
-========================================= */
-
-.adopcion-menu {
-  display: flex;
-  align-items: center;
-
-  gap: 28px;
-
+.adopcion-main-content {
   flex: 1;
-
-  margin: 0;
-  padding: 0;
+  padding-bottom: 5rem;
 }
 
-.adopcion-menu a {
+/* HERO BANNER */
+.adopcion-hero-banner {
+  background: linear-gradient(135deg, #0868B2 0%, #053b66 100%);
   color: white;
+  padding: 3.5rem 0 4.5rem;
+  text-align: center;
+}
 
-  text-decoration: none;
-
-  font-size: 17px;
+.hero-pill-badge {
+  display: inline-block;
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(8px);
+  color: #EAF4FF;
+  font-size: 0.8rem;
   font-weight: 700;
+  padding: 0.35rem 1rem;
+  border-radius: var(--radius-full);
+  margin-bottom: 1rem;
+  letter-spacing: 0.05em;
+}
 
-  transition: 0.3s;
+.adopcion-hero-banner h1 {
+  font-size: 2.75rem;
+  color: white;
+  margin-bottom: 0.85rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
 
+.adopcion-hero-banner h1 span {
+  color: var(--accent);
+}
+
+.adopcion-hero-banner p {
+  color: #CBD5E1;
+  font-size: 1.05rem;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+/* CATALOG CONTAINER & FILTERS */
+.catalog-container {
+  margin-top: -2.5rem;
+  position: relative;
+  z-index: 10;
+}
+
+.filtros-card {
+  background-color: var(--surface);
+  border-radius: var(--radius-lg);
+  padding: 1.75rem;
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--border-light);
+  margin-bottom: 2.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.search-bar-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.search-icon {
+  position: absolute;
+  left: 1rem;
+  font-size: 1.1rem;
+  color: var(--text-muted);
+}
+
+.search-input {
+  width: 100%;
+  padding: 0.85rem 2.5rem 0.85rem 2.8rem;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-md);
+  font-size: 1rem;
+  background-color: var(--surface-alt);
+  transition: all var(--transition-fast);
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: var(--primary);
+  background-color: var(--surface);
+  box-shadow: 0 0 0 3px rgba(8, 104, 178, 0.15);
+}
+
+.clear-search-btn {
+  position: absolute;
+  right: 1rem;
+  background: var(--border);
+  color: var(--text-muted);
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  font-size: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-fast);
+}
+
+.clear-search-btn:hover {
+  background-color: var(--text-muted);
+  color: white;
+}
+
+.filters-select-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr) auto;
+  gap: 1rem;
+  align-items: flex-end;
+}
+
+.select-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.select-group label {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--text-main);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.select-group select {
+  padding: 0.75rem 1rem;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  background-color: var(--surface);
+  color: var(--text-main);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.select-group select:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(8, 104, 178, 0.12);
+}
+
+.btn-limpiar-filtros {
+  background-color: var(--primary-light);
+  color: var(--primary);
+  font-weight: 700;
+  padding: 0.75rem 1.25rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.9rem;
+  transition: all var(--transition-fast);
   white-space: nowrap;
 }
 
-.adopcion-menu a:hover {
-  color: #ff9800;
+.btn-limpiar-filtros:hover {
+  background-color: #d2e5fc;
+  color: var(--primary-dark);
 }
 
-/* =========================================
-   CONTENIDO
-========================================= */
-
-.adopcion-contenido {
-  max-width: 1150px;
-
-  margin: auto;
-
-  background: white;
-
-  min-height: calc(100vh - 95px);
-
-  padding: 55px 55px 80px;
-}
-
-/* =========================================
-   INTRODUCCIÓN
-========================================= */
-
-.adopcion-intro {
-  text-align: center;
-
-  max-width: 720px;
-
-  margin: 0 auto 40px;
-}
-
-.adopcion-etiqueta {
-  color: #0874b9;
-
-  font-size: 13px;
-
-  font-weight: bold;
-}
-
-.adopcion-intro h1 {
-  color: #075f99;
-
-  font-size: 40px;
-
-  margin: 12px 0;
-}
-
-.adopcion-intro h1 span {
-  color: #ff9500;
-}
-
-.adopcion-intro p {
-  color: #777;
-
-  font-size: 16px;
-
-  line-height: 1.6;
-}
-
-/* =========================================
-   FILTROS
-========================================= */
-
-.filtros {
-  background: #f4f8fc;
-
-  border: 1px solid #dce8f1;
-
-  border-radius: 12px;
-
-  padding: 20px;
-
-  margin-bottom: 45px;
-}
-
-/* =========================================
-   BUSCADOR
-========================================= */
-
-.buscador {
-  width: 100%;
-  height: 48px;
-
-  background: white;
-
-  border: 1px solid #d4e0e9;
-
-  border-radius: 8px;
-
+/* RESULTS COUNTER */
+.results-counter-bar {
   display: flex;
   align-items: center;
-
-  padding: 0 15px;
-
-  margin-bottom: 15px;
-}
-
-.icono-busqueda {
-  font-size: 17px;
-
-  margin-right: 10px;
-}
-
-.buscador input {
-  width: 100%;
-
-  border: none;
-  outline: none;
-
-  font-size: 14px;
-
-  color: #444;
-}
-
-.buscador input::placeholder {
-  color: #999;
-}
-
-/* =========================================
-   SELECTS
-========================================= */
-
-.filtros-select {
-  display: grid;
-
-  grid-template-columns: 1fr 1fr 1fr auto;
-
-  gap: 12px;
-}
-
-.filtros-select select {
-  height: 45px;
-
-  border: 1px solid #d4e0e9;
-
-  background: white;
-
-  border-radius: 8px;
-
-  padding: 0 12px;
-
-  color: #555;
-
-  outline: none;
-
-  cursor: pointer;
-}
-
-.filtros-select select:focus {
-  border-color: #0874b9;
-}
-
-/* =========================================
-   BOTÓN LIMPIAR
-========================================= */
-
-.limpiar-btn {
-  border: none;
-
-  background: #0874b9;
-
-  color: white;
-
-  border-radius: 8px;
-
-  padding: 0 18px;
-
-  cursor: pointer;
-
-  font-weight: bold;
-
-  transition: 0.2s;
-}
-
-.limpiar-btn:hover {
-  background: #075f99;
-}
-
-/* =========================================
-   RESULTADOS
-========================================= */
-
-.resultados-header {
-  display: flex;
-
   justify-content: space-between;
-  align-items: center;
-
-  margin-bottom: 25px;
+  margin-bottom: 1.75rem;
 }
 
-.resultados-header h2 {
-  color: #075f99;
-
-  font-size: 26px;
+.results-counter-bar h2 {
+  font-size: 1.5rem;
+  color: var(--text-main);
 }
 
-.resultados-header p {
-  color: #888;
-
-  margin-top: 5px;
-
-  font-size: 14px;
+.counter-chip {
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--primary);
+  font-size: 0.85rem;
+  font-weight: 700;
+  padding: 0.35rem 1rem;
+  border-radius: var(--radius-full);
 }
 
-/* =========================================
-   GRID DE MASCOTAS
-========================================= */
-
+/* PET CATALOG GRID */
 .mascotas-grid {
   display: grid;
-
   grid-template-columns: repeat(3, 1fr);
-
-  gap: 30px;
+  gap: 2rem;
 }
 
-/* =========================================
-   TARJETA
-========================================= */
-
-.mascota-card {
-  background: white;
-
-  border-radius: 15px;
-
+.pet-catalog-card {
+  background-color: var(--surface);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-light);
+  box-shadow: var(--shadow-sm);
   overflow: hidden;
-
-  box-shadow: 0 7px 20px rgba(0, 0, 0, 0.09);
-
-  border: 1px solid #eeeeee;
-
-  transition: 0.25s;
-}
-
-.mascota-card:hover {
-  transform: translateY(-5px);
-
-  box-shadow: 0 12px 25px rgba(0, 0, 0, 0.13);
-}
-
-/* =========================================
-   IMAGEN DE LA MASCOTA
-========================================= */
-
-.mascota-imagen {
-  width: 100%;
-  height: 220px;
-
-  background: #dceefd;
-
-  position: relative;
-
-  overflow: hidden;
-}
-
-/* IMAGEN REAL */
-
-.mascota-imagen img {
-  width: 100%;
-  height: 100%;
-
-  object-fit: cover;
-
-  display: block;
-}
-
-/* POR SI TODAVÍA USAS EMOJI */
-
-.mascota-emoji {
-  width: 100%;
-  height: 100%;
-
   display: flex;
-
-  justify-content: center;
-  align-items: center;
-
-  font-size: 105px;
+  flex-direction: column;
+  transition: all var(--transition-normal);
 }
 
-/* =========================================
-   DISPONIBLE
-========================================= */
+.pet-catalog-card:hover {
+  transform: translateY(-6px);
+  box-shadow: var(--shadow-xl);
+  border-color: rgba(8, 104, 178, 0.2);
+}
 
-.disponible {
+.pet-card-image-box {
+  position: relative;
+  width: 100%;
+  height: 230px;
+  background-color: var(--primary-light);
+  overflow: hidden;
+}
+
+.pet-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+
+.pet-catalog-card:hover .pet-image {
+  transform: scale(1.05);
+}
+
+.pet-emoji-fallback {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 4.5rem;
+  background: radial-gradient(circle, #EAF4FF 0%, #D8EAFD 100%);
+}
+
+.badge-status {
   position: absolute;
-
   top: 12px;
   left: 12px;
-
-  background: #20a35a;
-
-  color: white;
-
-  padding: 6px 11px;
-
-  border-radius: 20px;
-
-  font-size: 11px;
-
-  font-weight: bold;
-
+  padding: 0.3rem 0.85rem;
+  border-radius: var(--radius-full);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
   z-index: 2;
+  box-shadow: var(--shadow-sm);
 }
 
-/* =========================================
-   INFORMACIÓN DE LA MASCOTA
-========================================= */
-
-.mascota-info {
-  padding: 20px;
+.badge-status.disponible {
+  background-color: var(--success);
+  color: white;
 }
 
-.nombre-mascota {
+.badge-status.adoptado {
+  background-color: var(--text-muted);
+  color: white;
+}
+
+.pet-card-content {
+  padding: 1.35rem;
   display: flex;
-
-  justify-content: space-between;
-  align-items: center;
-}
-
-.nombre-mascota h3 {
-  color: #0874b9;
-
-  font-size: 24px;
-}
-
-.nombre-mascota span {
-  font-size: 18px;
-}
-
-/* =========================================
-   DATOS DE LA MASCOTA
-========================================= */
-
-.datos-mascota {
-  display: flex;
-
   flex-direction: column;
-
-  gap: 7px;
-
-  margin: 12px 0 18px;
+  flex: 1;
 }
 
-.datos-mascota span {
-  color: #777;
-
-  font-size: 14px;
+.pet-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
 }
 
-/* =========================================
-   BOTÓN INFORMACIÓN
-========================================= */
+.pet-header h3 {
+  font-size: 1.25rem;
+  color: var(--text-main);
+  font-weight: 700;
+}
 
-.informacion-btn {
+.pet-emoji-tag {
+  font-size: 1.35rem;
+}
+
+.pet-tags-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.tag-pill {
+  background-color: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 0.25rem 0.65rem;
+  border-radius: var(--radius-sm);
+}
+
+.pet-description {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+  margin-bottom: 1.25rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.btn-adopt-action {
+  margin-top: auto;
   display: block;
-
   text-align: center;
-
-  background: #ff9500;
-
-  color: white;
-
-  text-decoration: none;
-
-  padding: 12px;
-
-  border-radius: 8px;
-
-  font-size: 14px;
-
-  font-weight: bold;
-
-  transition: 0.2s;
+  background-color: var(--primary);
+  color: white !important;
+  font-weight: 700;
+  padding: 0.75rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.95rem;
+  transition: all var(--transition-fast);
+  box-shadow: var(--shadow-sm);
 }
 
-.informacion-btn:hover {
-  background: #e98500;
-
-  transform: translateY(-2px);
+.btn-adopt-action:hover {
+  background-color: var(--primary-hover);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
 }
 
-/* =========================================
-   SIN RESULTADOS
-========================================= */
-
-.sin-resultados {
-  text-align: center;
-
-  padding: 70px 20px;
-
-  background: #f7f9fb;
-
-  border-radius: 12px;
+.btn-adopt-disabled {
+  margin-top: auto;
+  width: 100%;
+  padding: 0.75rem;
+  background-color: var(--border);
+  color: var(--text-light);
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+  cursor: not-allowed;
 }
 
-.sin-resultados > div {
-  font-size: 60px;
-
-  margin-bottom: 15px;
-}
-
-.sin-resultados h3 {
-  color: #075f99;
-
-  margin-bottom: 8px;
-}
-
-.sin-resultados p {
-  color: #888;
-
-  margin-bottom: 20px;
-}
-
-.sin-resultados button {
-  border: none;
-
-  background: #0874b9;
-
-  color: white;
-
-  padding: 12px 20px;
-
-  border-radius: 7px;
-
-  cursor: pointer;
-
-  font-weight: bold;
-}
-
-/* =========================================
-   ¿POR QUÉ ADOPTAR?
-========================================= */
-
-.adopcion-info {
-  margin-top: 60px;
-
-  background: #fff6e8;
-
-  border-left: 5px solid #ff9500;
-
-  border-radius: 10px;
-
-  padding: 25px;
-
-  display: flex;
-
-  align-items: center;
-
-  gap: 20px;
-}
-
-.info-icon {
-  width: 55px;
-  height: 55px;
-
-  border-radius: 50%;
-
-  background: white;
-
-  display: flex;
-
-  justify-content: center;
-  align-items: center;
-
-  font-size: 25px;
-
-  flex-shrink: 0;
-}
-
-.adopcion-info h2 {
-  color: #075f99;
-
-  margin-bottom: 7px;
-}
-
-.adopcion-info p {
-  color: #666;
-
-  line-height: 1.6;
-}
-
-/* =========================================
-   FOOTER
-========================================= */
-
-.adopcion-footer {
-  background: #0066b3;
-
-  color: white;
-
-  padding: 30px 20px;
-
-  text-align: center;
-}
-
-/* LOGO DEL FOOTER */
-
-.footer-logo {
-  display: flex;
-
-  align-items: center;
-  justify-content: center;
-
-  gap: 8px;
-
-  font-size: 21px;
-
-  margin-bottom: 8px;
-}
-
-.footer-logo img {
-  width: 45px;
-  height: 45px;
-
-  object-fit: contain;
-
-  display: block;
-
-  flex-shrink: 0;
-}
-
-.adopcion-footer p {
-  font-size: 13px;
-
-  margin-bottom: 12px;
-
-  opacity: 0.9;
-}
-
-.adopcion-footer > span {
-  font-size: 11px;
-
-  opacity: 0.75;
-}
-
-/* =========================================
-   TABLET
-========================================= */
-
-@media (max-width: 1000px) {
-
-  .adopcion-navbar {
-    height: 90px;
-
-    padding: 0 10px 0 0;
-
-    gap: 18px;
+@media (min-width: 1200px) {
+  .mascotas-grid {
+    grid-template-columns: repeat(4, 1fr);
   }
+}
 
-  .adopcion-logo {
-    height: 90px;
-  }
-
-  .adopcion-logo-img {
-    width: 75px;
-    height: 75px;
-  }
-
-  .logo-texto strong {
-    font-size: 24px;
-  }
-
-  .logo-texto span {
-    font-size: 8px;
-  }
-
-  .adopcion-menu {
-    gap: 15px;
-  }
-
-  .adopcion-menu a {
-    font-size: 14px;
-  }
-
-  .adopcion-contenido {
-    padding: 45px 30px;
+@media (max-width: 992px) {
+  .filters-select-grid {
+    grid-template-columns: 1fr 1fr;
   }
 
   .mascotas-grid {
@@ -728,142 +373,16 @@ body {
   }
 }
 
-/* =========================================
-   CELULAR
-========================================= */
-
-@media (max-width: 700px) {
-
-  .adopcion-navbar {
-    height: auto;
-
-    min-height: 120px;
-
-    padding: 10px 12px;
-
-    flex-wrap: wrap;
-
-    gap: 10px;
-  }
-
-  .adopcion-logo {
-    height: 70px;
-
-    width: 100%;
-  }
-
-  .adopcion-logo-img {
-    width: 65px;
-    height: 65px;
-  }
-
-  .logo-texto strong {
-    font-size: 23px;
-  }
-
-  .logo-texto span {
-    font-size: 8px;
-  }
-
-  .adopcion-menu {
-    order: 2;
-
-    width: 100%;
-
-    justify-content: center;
-
-    flex-wrap: wrap;
-
-    gap: 12px;
-
-    padding-bottom: 5px;
-  }
-
-  .adopcion-menu a {
-    font-size: 13px;
-  }
-
-  .adopcion-contenido {
-    padding: 40px 18px;
-  }
-
-  .adopcion-intro h1 {
-    font-size: 31px;
-  }
-
-  .adopcion-intro p {
-    font-size: 14px;
-  }
-
-  .filtros-select {
+@media (max-width: 640px) {
+  .filters-select-grid {
     grid-template-columns: 1fr;
-  }
-
-  .filtros-select select {
-    width: 100%;
-  }
-
-  .limpiar-btn {
-    height: 43px;
   }
 
   .mascotas-grid {
     grid-template-columns: 1fr;
   }
 
-  .mascota-imagen {
-    height: 230px;
-  }
-
-  .adopcion-info {
-    flex-direction: column;
-
-    text-align: center;
-  }
-}
-
-/* =========================================
-   CELULAR PEQUEÑO
-========================================= */
-
-@media (max-width: 420px) {
-
-  .adopcion-logo {
-    height: 65px;
-  }
-
-  .adopcion-logo-img {
-    width: 60px;
-    height: 60px;
-  }
-
-  .logo-texto strong {
-    font-size: 21px;
-  }
-
-  .logo-texto span {
-    font-size: 7px;
-  }
-
-  .adopcion-menu {
-    justify-content: center;
-
-    gap: 10px;
-  }
-
-  .adopcion-menu a {
-    font-size: 12px;
-  }
-
-  .adopcion-intro h1 {
-    font-size: 27px;
-  }
-
-  .mascota-imagen {
-    height: 210px;
-  }
-
-  .mascota-emoji {
-    font-size: 90px;
+  .adopcion-hero-banner h1 {
+    font-size: 2rem;
   }
 }
