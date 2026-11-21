@@ -24,7 +24,7 @@ function Iniciosesion() {
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          correo: correo,
+          correo: correo.trim().toLowerCase(),
           password: password
         })
       });
@@ -32,7 +32,15 @@ function Iniciosesion() {
       const datos = await respuesta.json();
 
       if (!respuesta.ok) {
-        setError(datos.detail || "Correo o contrasena incorrectos");
+        let mensaje = "Correo o contraseña incorrectos";
+        if (datos.detail) {
+          if (Array.isArray(datos.detail)) {
+            mensaje = datos.detail.map((err) => err.msg || err).join(", ");
+          } else {
+            mensaje = datos.detail;
+          }
+        }
+        setError(mensaje);
         setCargando(false);
         return;
       }
@@ -40,7 +48,7 @@ function Iniciosesion() {
       localStorage.setItem("token", datos.access_token);
       localStorage.setItem("usuario", JSON.stringify(datos.usuario));
 
-            if (datos.usuario.rol === "admin") {
+      if (datos.usuario.rol === "admin") {
         navigate("/admin");
       } else {
         navigate("/principal");

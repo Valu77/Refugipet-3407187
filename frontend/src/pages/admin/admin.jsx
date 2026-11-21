@@ -1,11 +1,13 @@
 import "../../admin.css";
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import logo from "../../assets/logo.png";
 
 const API_URL = "http://127.0.0.1:8000/api";
 
 function Admin() {
+  const navigate = useNavigate();
+
   const [seccion, setSeccion] = useState("inicio");
 
   const [mascotas, setMascotas] = useState([]);
@@ -36,28 +38,56 @@ function Admin() {
 
   // ================= USUARIOS =================
 
-  const [usuarios] = useState([
-    {
-      id: 1,
-      nombre: "Juan Perez",
-      correo: "juan@email.com",
-      rol: "Usuario",
-    },
-    {
-      id: 2,
-      nombre: "Maria Gomez",
-      correo: "maria@email.com",
-      rol: "Usuario",
-    },
-    {
-      id: 3,
-      nombre: "Administrador",
-      correo: "admin@refugipet.com",
-      rol: "Administrador",
-    },
-  ]);
+  const [usuarios, setUsuarios] = useState([]);
+  const [cargandoUsuarios, setCargandoUsuarios] = useState(false);
 
   const obtenerToken = () => localStorage.getItem("token");
+
+  const cerrarSesion = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("usuario");
+    navigate("/iniciosesion");
+  };
+
+  // Verificación estricta de rol administrador en el frontend
+  useEffect(() => {
+    const token = obtenerToken();
+    let usuario = null;
+    try {
+      usuario = JSON.parse(localStorage.getItem("usuario") || "null");
+    } catch (e) {
+      usuario = null;
+    }
+
+    if (!token || !usuario || usuario.rol !== "admin") {
+      navigate("/iniciosesion");
+    }
+  }, [navigate]);
+
+  const cargarUsuarios = async () => {
+    setCargandoUsuarios(true);
+    try {
+      const respuesta = await fetch(API_URL + "/auth/usuarios", {
+        headers: {
+          Authorization: "Bearer " + obtenerToken()
+        }
+      });
+      if (respuesta.ok) {
+        const datos = await respuesta.json();
+        setUsuarios(datos);
+      } else if (respuesta.status === 401 || respuesta.status === 403) {
+        cerrarSesion();
+      }
+    } catch (err) {
+      console.error("Error al cargar usuarios:", err);
+    } finally {
+      setCargandoUsuarios(false);
+    }
+  };
+
+  useEffect(() => {
+    cargarUsuarios();
+  }, []);
 
   // ================= CARGAR MASCOTAS =================
 
@@ -443,8 +473,8 @@ function Admin() {
 
         <div className="admin-salir">
 
-          <Link to="/">
-            Cerrar sesion
+          <Link to="/iniciosesion" onClick={cerrarSesion}>
+            Cerrar sesión
           </Link>
 
         </div>

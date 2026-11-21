@@ -20,8 +20,21 @@ function Registrar() {
     e.preventDefault();
     setError("");
 
+    // Validar formato de correo electrónico
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(correo.trim())) {
+      setError("Por favor ingresa un correo electrónico válido");
+      return;
+    }
+
+    // Exigir contraseñas seguras de mínimo 12 caracteres
+    if (password.length < 12) {
+      setError("La contraseña debe tener un mínimo de 12 caracteres");
+      return;
+    }
+
     if (password !== confirmPassword) {
-      setError("Las contrasenas no coinciden");
+      setError("Las contraseñas no coinciden");
       return;
     }
 
@@ -34,16 +47,26 @@ function Registrar() {
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          nombre: nombre,
-          correo: correo,
-          password: password
+          nombre: nombre.trim(),
+          correo: correo.trim().toLowerCase(),
+          password: password,
+          confirmar_password: confirmPassword
         })
       });
 
       const datos = await respuesta.json();
 
       if (!respuesta.ok) {
-        setError(datos.detail || "No se pudo completar el registro");
+        let mensajeError = "No se pudo completar el registro";
+        if (datos.detail) {
+          if (Array.isArray(datos.detail)) {
+            // Manejar errores de validación de Pydantic
+            mensajeError = datos.detail.map((err) => err.msg || err).join(", ");
+          } else {
+            mensajeError = datos.detail;
+          }
+        }
+        setError(mensajeError);
         setCargando(false);
         return;
       }
@@ -149,27 +172,32 @@ function Registrar() {
           </div>
 
           <div className="register-input-group">
-            <label htmlFor="password">Contrasena</label>
+            <label htmlFor="password">Contraseña</label>
 
             <input
               type="password"
               id="password"
-              placeholder="Crea una contrasena"
+              placeholder="Crea una contraseña segura (mín. 12 caracteres)"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              minLength={12}
               required
             />
+            <small style={{ color: "#666", fontSize: "0.8rem", marginTop: "4px", display: "block" }}>
+              Mínimo 12 caracteres.
+            </small>
           </div>
 
           <div className="register-input-group">
-            <label htmlFor="confirmPassword">Confirmar contrasena</label>
+            <label htmlFor="confirmPassword">Confirmar contraseña</label>
 
             <input
               type="password"
               id="confirmPassword"
-              placeholder="Repite tu contrasena"
+              placeholder="Repite tu contraseña"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
+              minLength={12}
               required
             />
           </div>

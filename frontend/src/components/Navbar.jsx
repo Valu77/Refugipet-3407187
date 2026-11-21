@@ -25,6 +25,14 @@ function Navbar({ variant = "app" }) {
 
   const isPublic = variant === "public";
 
+  let usuario = null;
+  try {
+    usuario = JSON.parse(localStorage.getItem("usuario") || "null");
+  } catch (e) {
+    usuario = null;
+  }
+  const esAdmin = usuario && usuario.rol === "admin";
+
   return (
     <header className="site-header">
       <div className="header-container">
@@ -74,6 +82,15 @@ function Navbar({ variant = "app" }) {
               >
                 Contacto
               </Link>
+              {esAdmin && (
+                <Link
+                  to="/admin"
+                  className={`nav-link ${location.pathname === "/admin" ? "active" : ""}`}
+                  onClick={cerrarMenu}
+                >
+                  Panel Admin
+                </Link>
+              )}
               <button className="nav-btn-logout" onClick={cerrarSesion}>
                 Cerrar Sesión
               </button>

@@ -8,6 +8,7 @@ import Adopcion from "./pages/adopcion";
 import Contacto from "./pages/contacto";
 import Admin from "./pages/admin/admin";
 import SolicitarAdopcion from "./pages/SolicitarAdopcion";
+import RutaProtegida from "./components/RutaProtegida";
 
 function App() {
   return (
@@ -53,16 +54,24 @@ function App() {
           element={<Contacto />}
         />
 
-        {/* Administrador */}
+        {/* Administrador (Ruta protegida exclusiva para administradores) */}
         <Route
           path="/admin"
-          element={<Admin />}
+          element={
+            <RutaProtegida soloAdmin>
+              <Admin />
+            </RutaProtegida>
+          }
         />
 
-        {/* Solicitar adopción */}
+        {/* Solicitar adopción (Requiere autenticación) */}
         <Route
           path="/solicitar-adopcion/:id"
-          element={<SolicitarAdopcion />}
+          element={
+            <RutaProtegida>
+              <SolicitarAdopcion />
+            </RutaProtegida>
+          }
         />
 
       </Routes>
