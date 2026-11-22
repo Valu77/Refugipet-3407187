@@ -13,7 +13,9 @@ from .routers import (
     auth,
     mascotas,
     adopciones,
-    contactos
+    contactos,
+    refugio,
+    admin_refugios
 )
 
 
@@ -99,5 +101,15 @@ app.include_router(
 )
 app.include_router(
     contactos.router,
+    prefix="/api"
+)
+
+app.include_router(
+    refugio.router,
+    prefix="/api"
+)
+
+app.include_router(
+    admin_refugios.router,
     prefix="/api"
 )

@@ -48,6 +48,7 @@ function Navbar({ variant = "app" }) {
     usuario = null;
   }
   const esAdmin = usuario && usuario.rol === "admin";
+  const esRefugio = usuario && usuario.rol === "refugio";
 
   return (
     <header className="site-header">
@@ -106,6 +107,16 @@ function Navbar({ variant = "app" }) {
                 >
                   <span className="admin-badge-dot"></span>
                   Panel Admin
+                </Link>
+              )}
+              {esRefugio && (
+                <Link
+                  to="/refugio"
+                  className={`nav-link nav-link-admin ${location.pathname === "/refugio" ? "active" : ""}`}
+                  onClick={cerrarMenu}
+                >
+                  <span className="admin-badge-dot" style={{ backgroundColor: "#10B981" }}></span>
+                  Mi Refugio
                 </Link>
               )}
               <button className="nav-btn-logout" onClick={cerrarSesion}>

@@ -62,6 +62,86 @@ class Usuario(Base):
         cascade="all, delete-orphan"
     )
 
+    refugio = relationship(
+        "Refugio",
+        back_populates="usuario",
+        uselist=False,
+        cascade="all, delete-orphan"
+    )
+
+
+# ==========================================
+# REFUGIOS
+# ==========================================
+
+class Refugio(Base):
+
+    __tablename__ = "refugios"
+
+    id = Column(
+        Integer,
+        primary_key=True,
+        index=True
+    )
+
+    usuario_id = Column(
+        Integer,
+        ForeignKey("usuarios.id", ondelete="CASCADE"),
+        unique=True,
+        nullable=False
+    )
+
+    nombre_refugio = Column(
+        String(150),
+        nullable=False
+    )
+
+    nombre_responsable = Column(
+        String(100),
+        nullable=False
+    )
+
+    telefono = Column(
+        String(30),
+        nullable=False
+    )
+
+    ciudad = Column(
+        String(100),
+        nullable=False
+    )
+
+    direccion = Column(
+        String(200),
+        nullable=False
+    )
+
+    estado = Column(
+        String(30),
+        default="pendiente",
+        nullable=False
+    )
+
+    motivo_rechazo = Column(
+        Text,
+        nullable=True
+    )
+
+    creado_en = Column(
+        DateTime(timezone=True),
+        server_default=func.now()
+    )
+
+    usuario = relationship(
+        "Usuario",
+        back_populates="refugio"
+    )
+
+    mascotas = relationship(
+        "Mascota",
+        back_populates="refugio"
+    )
+
 
 # ==========================================
 # MASCOTAS
@@ -75,6 +155,12 @@ class Mascota(Base):
         Integer,
         primary_key=True,
         index=True
+    )
+
+    refugio_id = Column(
+        Integer,
+        ForeignKey("refugios.id", ondelete="SET NULL"),
+        nullable=True
     )
 
     nombre = Column(
@@ -121,6 +207,11 @@ class Mascota(Base):
     adopciones = relationship(
         "Adopcion",
         back_populates="mascota"
+    )
+
+    refugio = relationship(
+        "Refugio",
+        back_populates="mascotas"
     )
 
 

@@ -50,6 +50,8 @@ function Iniciosesion() {
 
       if (datos.usuario.rol === "admin") {
         navigate("/admin");
+      } else if (datos.usuario.rol === "refugio") {
+        navigate("/refugio");
       } else {
         navigate("/principal");
       }

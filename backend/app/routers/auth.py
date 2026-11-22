@@ -12,11 +12,13 @@ from sqlalchemy.exc import IntegrityError
 from typing import List
 
 from ..database import get_db
-from ..models import Usuario
+from ..models import Usuario, Refugio
 
 from ..schemas import (
     UsuarioRegistro,
     UsuarioRespuesta,
+    RefugioRegistro,
+    RefugioRespuesta,
     Login,
     Token
 )
@@ -94,6 +96,74 @@ def registrar(
 
 
 # ==========================================
+# REGISTRO DE REFUGIO
+# ==========================================
+
+@router.post(
+    "/registrar-refugio",
+    response_model=RefugioRespuesta,
+    status_code=status.HTTP_201_CREATED
+)
+def registrar_refugio(
+    datos: RefugioRegistro,
+    db: Session = Depends(get_db)
+):
+    correo_normalizado = datos.correo.strip().lower()
+
+    # Verificar si el correo ya existe
+    usuario_existente = db.query(
+        Usuario
+    ).filter(
+        func.lower(Usuario.correo) == correo_normalizado
+    ).first()
+
+    if usuario_existente:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="El correo electrónico ya se encuentra registrado"
+        )
+
+    # Hash seguro con Argon2id
+    password_hasheada = hash_password(datos.password)
+
+    nuevo_usuario = Usuario(
+        nombre=datos.nombre_responsable.strip(),
+        correo=correo_normalizado,
+        password=password_hasheada,
+        rol="refugio"  # Seguridad: asignado por el servidor, nunca por petición
+    )
+
+    try:
+        db.add(nuevo_usuario)
+        db.flush()
+
+        nuevo_refugio = Refugio(
+            usuario_id=nuevo_usuario.id,
+            nombre_refugio=datos.nombre_refugio.strip(),
+            nombre_responsable=datos.nombre_responsable.strip(),
+            telefono=datos.telefono.strip(),
+            ciudad=datos.ciudad.strip(),
+            direccion=datos.direccion.strip(),
+            estado="pendiente"  # Por defecto siempre pendiente de aprobación
+        )
+
+        db.add(nuevo_refugio)
+        db.commit()
+        db.refresh(nuevo_refugio)
+
+        # Inyectar correo para el response_model
+        nuevo_refugio.correo = nuevo_usuario.correo
+        return nuevo_refugio
+
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="El correo electrónico ya se encuentra registrado"
+        )
+
+
+# ==========================================
 # LOGIN
 # ==========================================
 
@@ -152,17 +222,46 @@ def login(
             detail="Correo o contraseña incorrectos"
         )
 
+    # Si es cuenta de tipo refugio, comprobar su estado de aprobación
+    if usuario.rol == "refugio":
+        refugio = db.query(Refugio).filter(Refugio.usuario_id == usuario.id).first()
+        if refugio:
+            if refugio.estado == "pendiente":
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="Tu solicitud de registro como refugio está pendiente de aprobación por el administrador general."
+                )
+            elif refugio.estado == "rechazado":
+                motivo = refugio.motivo_rechazo or "No especificado por el administrador"
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail=f"Tu solicitud de registro fue rechazada. Motivo: {motivo}"
+                )
+            elif refugio.estado == "suspendido":
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="Este refugio se encuentra temporalmente suspendido. Por favor contacta al administrador general."
+                )
+            elif refugio.estado != "aprobado":
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="Tu cuenta de refugio no cuenta con autorización activa."
+                )
+
     # Restablecer intentos fallidos tras inicio de sesión exitoso
     login_rate_limiter.reset_attempts(clave_ip)
     login_rate_limiter.reset_attempts(clave_cuenta)
 
-    token = create_access_token(
-        {
-            "id": usuario.id,
-            "correo": usuario.correo,
-            "rol": usuario.rol
-        }
-    )
+    payload_token = {
+        "id": usuario.id,
+        "correo": usuario.correo,
+        "rol": usuario.rol
+    }
+
+    if usuario.rol == "refugio" and usuario.refugio:
+        payload_token["refugio_id"] = usuario.refugio.id
+
+    token = create_access_token(payload_token)
 
     return {
         "access_token": token,

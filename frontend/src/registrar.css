@@ -45,6 +45,39 @@
   margin-bottom: 1.75rem;
 }
 
+/* Selector de tipo de cuenta */
+.register-type-selector {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  background-color: var(--primary-light);
+  padding: 0.35rem;
+  border-radius: var(--radius-md);
+}
+
+.btn-type-tab {
+  padding: 0.75rem 0.5rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  background: transparent;
+  transition: all var(--transition-fast);
+  text-align: center;
+  cursor: pointer;
+}
+
+.btn-type-tab:hover {
+  color: var(--primary);
+}
+
+.btn-type-tab.active {
+  background-color: var(--surface);
+  color: var(--primary);
+  box-shadow: var(--shadow-sm);
+}
+
 .register-form {
   display: flex;
   flex-direction: column;
