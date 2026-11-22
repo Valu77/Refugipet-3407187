@@ -12,7 +12,7 @@ function RutaProtegida({ children, soloAdmin = false }) {
 
   try {
     usuario = JSON.parse(localStorage.getItem("usuario") || "null");
-  } catch (e) {
+  } catch (_e) {
     usuario = null;
   }
 

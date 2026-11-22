@@ -2,11 +2,9 @@ import "../registrar.css";
 
 import { useState } from "react";
 import logo from "../assets/logo.png";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 function Registrar() {
-  const navigate = useNavigate();
-
   const [nombre, setNombre] = useState("");
   const [correo, setCorreo] = useState("");
   const [telefono, setTelefono] = useState("");

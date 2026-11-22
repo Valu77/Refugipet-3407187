@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import logo from "../assets/logo.png";
 import "./layout.css";
@@ -16,6 +16,22 @@ function Navbar({ variant = "app" }) {
     setMenuAbierto(false);
   };
 
+  // Cerrar menú móvil al navegar
+  useEffect(() => {
+    setMenuAbierto(false);
+  }, [location.pathname]);
+
+  // Cerrar menú móvil si se redimensiona a pantalla de escritorio
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth > 960) {
+        setMenuAbierto(false);
+      }
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
   const cerrarSesion = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("usuario");
@@ -28,7 +44,7 @@ function Navbar({ variant = "app" }) {
   let usuario = null;
   try {
     usuario = JSON.parse(localStorage.getItem("usuario") || "null");
-  } catch (e) {
+  } catch (_e) {
     usuario = null;
   }
   const esAdmin = usuario && usuario.rol === "admin";
@@ -49,7 +65,7 @@ function Navbar({ variant = "app" }) {
         <button
           className={`mobile-menu-btn ${menuAbierto ? "open" : ""}`}
           onClick={toggleMenu}
-          aria-label="Abrir menú de navegación"
+          aria-label={menuAbierto ? "Cerrar menú de navegación" : "Abrir menú de navegación"}
           aria-expanded={menuAbierto}
         >
           <span className="hamburger-line"></span>
@@ -85,9 +101,10 @@ function Navbar({ variant = "app" }) {
               {esAdmin && (
                 <Link
                   to="/admin"
-                  className={`nav-link ${location.pathname === "/admin" ? "active" : ""}`}
+                  className={`nav-link nav-link-admin ${location.pathname === "/admin" ? "active" : ""}`}
                   onClick={cerrarMenu}
                 >
+                  <span className="admin-badge-dot"></span>
                   Panel Admin
                 </Link>
               )}
@@ -122,6 +139,15 @@ function Navbar({ variant = "app" }) {
           )}
         </nav>
       </div>
+
+      {/* OVERLAY BACKDROP EN MÓVIL */}
+      {menuAbierto && (
+        <div
+          className="nav-backdrop"
+          onClick={cerrarMenu}
+          aria-hidden="true"
+        />
+      )}
     </header>
   );
 }
