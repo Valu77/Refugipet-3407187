@@ -23,9 +23,9 @@
 .register-card {
   background-color: var(--surface);
   border-radius: var(--radius-lg);
-  padding: 2.75rem 2.25rem;
+  padding: 2.5rem 2.25rem;
   width: 100%;
-  max-width: 480px;
+  max-width: 540px;
   box-shadow: var(--shadow-xl);
   border: 1px solid var(--border-light);
 }
@@ -82,6 +82,61 @@
   display: flex;
   flex-direction: column;
   gap: 1.1rem;
+}
+
+.register-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.register-error-alert {
+  background-color: var(--danger-bg);
+  color: #b91c1c;
+  border: 1px solid #fecaca;
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.9rem;
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.register-info-banner {
+  background-color: var(--primary-light);
+  color: var(--primary-dark);
+  border: 1px solid rgba(8, 104, 178, 0.2);
+  padding: 0.85rem 1rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.88rem;
+  line-height: 1.45;
+  margin-bottom: 1.25rem;
+}
+
+.register-success-badge {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--success-bg);
+  color: var(--success);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.75rem;
+  margin: 0 auto 1rem;
+}
+
+@media (max-width: 560px) {
+  .register-page {
+    padding: 1.5rem 1rem;
+  }
+
+  .register-card {
+    padding: 1.75rem 1.25rem;
+  }
+
+  .register-form-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 .register-input-group {

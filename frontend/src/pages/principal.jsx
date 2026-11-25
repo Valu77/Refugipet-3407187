@@ -29,7 +29,7 @@ function Principal() {
 
       const datos = await respuesta.json();
       setMascotas(datos);
-    } catch (err) {
+    } catch (_err) {
       setError("No se pudo conectar con el servidor.");
     } finally {
       setCargando(false);
@@ -161,6 +161,12 @@ function Principal() {
                       <p className="pet-meta">
                         <span>{mascota.tipo}</span> · <span>{mascota.edad} {mascota.edad === 1 ? "año" : "años"}</span>
                       </p>
+
+                      {mascota.nombre_refugio && (
+                        <p style={{ fontSize: "0.8rem", color: "var(--primary)", fontWeight: 600, marginBottom: "0.6rem" }}>
+                          🏠 {mascota.nombre_refugio}
+                        </p>
+                      )}
 
                       <Link to="/adopcion" className="btn-card-action">
                         Conocer más

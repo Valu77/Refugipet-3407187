@@ -72,20 +72,20 @@ class Token(BaseModel):
 
 class MascotaCrear(BaseModel):
 
-    nombre: str
-    tipo: str
-    edad: int
-    tamaño: str
+    nombre: str = Field(..., min_length=1, max_length=100)
+    tipo: str = Field(..., min_length=1, max_length=50)
+    edad: int = Field(..., ge=0, le=50)
+    tamaño: str = Field(..., min_length=1, max_length=50)
     descripcion: Optional[str] = None
     imagen: Optional[str] = None
 
 
 class MascotaActualizar(BaseModel):
 
-    nombre: Optional[str] = None
-    tipo: Optional[str] = None
-    edad: Optional[int] = None
-    tamaño: Optional[str] = None
+    nombre: Optional[str] = Field(None, min_length=1, max_length=100)
+    tipo: Optional[str] = Field(None, min_length=1, max_length=50)
+    edad: Optional[int] = Field(None, ge=0, le=50)
+    tamaño: Optional[str] = Field(None, min_length=1, max_length=50)
     descripcion: Optional[str] = None
     imagen: Optional[str] = None
     estado: Optional[str] = None
@@ -95,6 +95,8 @@ class MascotaRespuesta(BaseModel):
 
     id: int
     refugio_id: Optional[int] = None
+    nombre_refugio: Optional[str] = None
+    ciudad_refugio: Optional[str] = None
     nombre: str
     tipo: str
     edad: int
@@ -267,6 +269,16 @@ class AdopcionRespuesta(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+class AdopcionConDetallesRespuesta(AdopcionRespuesta):
+
+    usuario_nombre: Optional[str] = None
+    usuario_correo: Optional[str] = None
+    mascota_nombre: Optional[str] = None
+    mascota_tipo: Optional[str] = None
+    mascota_estado: Optional[str] = None
+    refugio_nombre: Optional[str] = None
 
 
 # ==========================================

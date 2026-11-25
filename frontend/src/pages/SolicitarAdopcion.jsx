@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
@@ -17,6 +17,21 @@ function SolicitarAdopcion() {
     otrasMascotas: "No",
     motivo: "",
   });
+
+  useEffect(() => {
+    try {
+      const usuario = JSON.parse(localStorage.getItem("usuario") || "null");
+      if (usuario) {
+        setFormulario((prev) => ({
+          ...prev,
+          nombre: prev.nombre || usuario.nombre || "",
+          correo: prev.correo || usuario.correo || "",
+        }));
+      }
+    } catch (_e) {
+      // ignorar
+    }
+  }, []);
 
   const [enviado, setEnviado] = useState(false);
   const [cargando, setCargando] = useState(false);

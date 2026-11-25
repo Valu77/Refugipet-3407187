@@ -110,6 +110,13 @@ def actualizar_contacto(
             detail="Mensaje no encontrado"
         )
 
+    estados_validos = ["No leído", "Leído"]
+    if datos.estado not in estados_validos:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Estado inválido. Debe ser uno de: {estados_validos}"
+        )
+
     contacto.estado = datos.estado
 
     db.commit()
@@ -117,3 +124,36 @@ def actualizar_contacto(
     db.refresh(contacto)
 
     return contacto
+
+
+# ==========================================
+# ELIMINAR MENSAJE
+# SOLO ADMIN
+# ==========================================
+
+@router.delete(
+    "/{contacto_id}"
+)
+def eliminar_contacto(
+    contacto_id: int,
+    db: Session = Depends(get_db),
+    admin = Depends(get_current_admin)
+):
+    contacto = db.query(
+        Contacto
+    ).filter(
+        Contacto.id == contacto_id
+    ).first()
+
+    if not contacto:
+        raise HTTPException(
+            status_code=404,
+            detail="Mensaje no encontrado"
+        )
+
+    db.delete(contacto)
+    db.commit()
+
+    return {
+        "mensaje": "Mensaje eliminado correctamente"
+    }

@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session
 from typing import List, Optional
 
 from ..database import get_db
-from ..models import Refugio, Usuario, Mascota, Adopcion
+from ..models import Refugio, Usuario, Mascota, Adopcion, Contacto
 from ..schemas import (
     RefugioRespuesta,
     RefugioGestionEstado,
@@ -198,6 +198,33 @@ def obtener_mascotas_de_refugio(
         Mascota.refugio_id == refugio_id
     ).order_by(Mascota.id.desc()).all()
 
+    for m in mascotas:
+        m.nombre_refugio = refugio.nombre_refugio
+        m.ciudad_refugio = refugio.ciudad
+
+    return mascotas
+
+
+# ==========================================
+# LISTAR TODAS LAS MASCOTAS (ADMIN)
+# ==========================================
+
+@router.get(
+    "/mascotas",
+    response_model=List[MascotaRespuesta]
+)
+def listar_todas_mascotas_admin(
+    db: Session = Depends(get_db),
+    admin: Usuario = Depends(get_current_admin)
+):
+    mascotas = db.query(Mascota).order_by(Mascota.id.desc()).all()
+    for m in mascotas:
+        if m.refugio:
+            m.nombre_refugio = m.refugio.nombre_refugio
+            m.ciudad_refugio = m.refugio.ciudad
+        else:
+            m.nombre_refugio = None
+            m.ciudad_refugio = None
     return mascotas
 
 
@@ -215,17 +242,23 @@ def obtener_estadisticas_generales(
     total_usuarios = db.query(Usuario).filter(Usuario.rol == "usuario").count()
     total_refugios = db.query(Refugio).count()
     refugios_pendientes = db.query(Refugio).filter(Refugio.estado == "pendiente").count()
-    total_mascotas = db.query(Mascota).count()
+    refugios_aprobados = db.query(Refugio).filter(Refugio.estado == "aprobado").count()
+    total_mascotas = db.query(Mascota).filter(Mascota.estado != "Retirada").count()
     mascotas_disponibles = db.query(Mascota).filter(Mascota.estado == "Disponible").count()
     mascotas_adoptadas = db.query(Mascota).filter(Mascota.estado == "Adoptada").count()
     total_adopciones = db.query(Adopcion).count()
+    adopciones_pendientes = db.query(Adopcion).filter(Adopcion.estado == "Pendiente").count()
+    contactos_no_leidos = db.query(Contacto).filter(Contacto.estado == "No leído").count()
 
     return {
         "total_usuarios": total_usuarios,
         "total_refugios": total_refugios,
         "refugios_pendientes": refugios_pendientes,
+        "refugios_aprobados": refugios_aprobados,
         "total_mascotas": total_mascotas,
         "mascotas_disponibles": mascotas_disponibles,
         "mascotas_adoptadas": mascotas_adoptadas,
-        "total_adopciones": total_adopciones
+        "total_adopciones": total_adopciones,
+        "adopciones_pendientes": adopciones_pendientes,
+        "contactos_no_leidos": contactos_no_leidos
     }

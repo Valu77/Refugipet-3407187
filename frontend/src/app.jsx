@@ -7,6 +7,7 @@ import Principal from "./pages/principal";
 import Adopcion from "./pages/adopcion";
 import Contacto from "./pages/contacto";
 import Admin from "./pages/admin/admin";
+import PanelRefugio from "./pages/refugio/PanelRefugio";
 import SolicitarAdopcion from "./pages/SolicitarAdopcion";
 import RutaProtegida from "./components/RutaProtegida";
 
@@ -60,6 +61,16 @@ function App() {
           element={
             <RutaProtegida soloAdmin>
               <Admin />
+            </RutaProtegida>
+          }
+        />
+
+        {/* Panel de Refugio (Ruta protegida exclusiva para refugios) */}
+        <Route
+          path="/refugio"
+          element={
+            <RutaProtegida soloRefugio>
+              <PanelRefugio />
             </RutaProtegida>
           }
         />

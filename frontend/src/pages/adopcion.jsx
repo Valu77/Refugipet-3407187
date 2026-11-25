@@ -57,10 +57,12 @@ function Adopcion() {
       tipo === "Todos" ||
       (mascota.tipo && mascota.tipo.toLowerCase().includes(tipo.toLowerCase()));
 
+    const tamanoMascota = (mascota.tamaño || mascota.tamano || "").toLowerCase();
+    const tamanoFiltro = tamaño.toLowerCase();
     const coincideTamaño =
       tamaño === "Todos" ||
-      mascota.tamaño === tamaño ||
-      mascota.tamano === tamaño;
+      tamanoMascota === tamanoFiltro ||
+      (tamanoFiltro === "pequeño" && tamanoMascota === "pequeno");
 
     const coincideEdad =
       edad === "Todas" ||
@@ -270,6 +272,17 @@ function Adopcion() {
                         <span className="tag-pill">{mascota.tamaño || mascota.tamano}</span>
                       ) : null}
                     </div>
+
+                    <p
+                      style={{
+                        fontSize: "0.82rem",
+                        color: "var(--primary-dark)",
+                        fontWeight: 600,
+                        marginBottom: "0.45rem",
+                      }}
+                    >
+                      🏠 {mascota.nombre_refugio ? `${mascota.nombre_refugio}${mascota.ciudad_refugio ? ` (${mascota.ciudad_refugio})` : ""}` : "RefugiPet"}
+                    </p>
 
                     {mascota.descripcion && (
                       <p className="pet-description">{mascota.descripcion}</p>

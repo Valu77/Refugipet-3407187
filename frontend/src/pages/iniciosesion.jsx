@@ -55,7 +55,7 @@ function Iniciosesion() {
       } else {
         navigate("/principal");
       }
-    } catch (err) {
+    } catch (_err) {
       setError("No se pudo conectar con el servidor.");
     } finally {
       setCargando(false);

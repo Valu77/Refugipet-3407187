@@ -117,8 +117,8 @@ def registrar_mascota_refugio(
         nombre=datos.nombre.strip(),
         tipo=datos.tipo.strip(),
         edad=datos.edad,
-        tamaño=datos.tamaño.strip(),
-        descripcion=datos.descripcion,
+        tamaño="Pequeño" if datos.tamaño.strip().lower() == "pequeno" else datos.tamaño.strip(),
+        descripcion=datos.descripcion.strip() if datos.descripcion else None,
         imagen=datos.imagen,
         estado="Disponible"
     )
@@ -126,6 +126,8 @@ def registrar_mascota_refugio(
     db.add(nueva_mascota)
     db.commit()
     db.refresh(nueva_mascota)
+    nueva_mascota.nombre_refugio = refugio.nombre_refugio
+    nueva_mascota.ciudad_refugio = refugio.ciudad
 
     return nueva_mascota
 
@@ -155,10 +157,16 @@ def actualizar_mascota_refugio(
 
     datos_actualizados = datos.model_dump(exclude_unset=True)
     for campo, valor in datos_actualizados.items():
+        if campo == "tamaño" and isinstance(valor, str):
+            valor = "Pequeño" if valor.strip().lower() == "pequeno" else valor.strip()
+        elif isinstance(valor, str):
+            valor = valor.strip()
         setattr(mascota, campo, valor)
 
     db.commit()
     db.refresh(mascota)
+    mascota.nombre_refugio = refugio.nombre_refugio
+    mascota.ciudad_refugio = refugio.ciudad
 
     return mascota
 
@@ -286,13 +294,18 @@ def responder_solicitud_adopcion(
             detail=f"Estado inválido. Debe ser uno de: {estados_validos}"
         )
 
-    adopcion.estado = datos.estado
-
     # Si se aprueba la adopción, marcar la mascota como 'Adoptada'
+    mascota = db.query(Mascota).filter(Mascota.id == adopcion.mascota_id).first()
     if datos.estado == "Aprobada":
-        mascota = db.query(Mascota).filter(Mascota.id == adopcion.mascota_id).first()
+        if mascota and mascota.estado == "Adoptada" and adopcion.estado != "Aprobada":
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Esta mascota ya fue marcada como adoptada en otra solicitud."
+            )
         if mascota:
             mascota.estado = "Adoptada"
+
+    adopcion.estado = datos.estado
 
     db.commit()
     db.refresh(adopcion)

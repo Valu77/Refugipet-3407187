@@ -124,3 +124,26 @@ def get_current_refugio(
         )
 
     return usuario, refugio
+
+
+def get_current_admin_or_refugio(
+    usuario: Usuario = Depends(get_current_user),
+    db: Session = Depends(get_db)
+) -> Usuario:
+    """Permite acceso a administradores o a cuentas de refugio aprobadas."""
+    if usuario.rol == "admin":
+        return usuario
+
+    if usuario.rol == "refugio":
+        refugio = db.query(Refugio).filter(Refugio.usuario_id == usuario.id).first()
+        if not refugio or refugio.estado != "aprobado":
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Tu cuenta de refugio debe estar aprobada para realizar esta acción."
+            )
+        return usuario
+
+    raise HTTPException(
+        status_code=status.HTTP_403_FORBIDDEN,
+        detail="Acceso denegado: se requieren privilegios de administrador o refugio aprobado."
+    )

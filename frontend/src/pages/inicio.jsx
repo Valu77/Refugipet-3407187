@@ -16,6 +16,8 @@ function Inicio() {
   });
 
   const [mensajeEnviado, setMensajeEnviado] = useState(false);
+  const [enviando, setEnviando] = useState(false);
+  const [errorContacto, setErrorContacto] = useState("");
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -24,32 +26,48 @@ function Inicio() {
       [name]: value,
     });
     setMensajeEnviado(false);
+    setErrorContacto("");
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setEnviando(true);
+    setErrorContacto("");
+    setMensajeEnviado(false);
 
-    const mensajesGuardados = JSON.parse(
-      localStorage.getItem("mensajesContacto") || "[]"
-    );
+    try {
+      const respuesta = await fetch("http://127.0.0.1:8000/api/contactos/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          nombre: formulario.nombre.trim(),
+          correo: formulario.correo.trim().toLowerCase(),
+          mensaje: formulario.mensaje.trim(),
+        }),
+      });
 
-    const nuevoMensaje = {
-      id: Date.now(),
-      nombre: formulario.nombre,
-      correo: formulario.correo,
-      mensaje: formulario.mensaje,
-      fecha: new Date().toLocaleString(),
-    };
+      const datos = await respuesta.json().catch(() => ({}));
+      if (!respuesta.ok) {
+        const msg = Array.isArray(datos.detail)
+          ? datos.detail.map((d) => d.msg || d).join(", ")
+          : datos.detail || "No se pudo enviar el mensaje.";
+        setErrorContacto(msg);
+        return;
+      }
 
-    mensajesGuardados.push(nuevoMensaje);
-    localStorage.setItem("mensajesContacto", JSON.stringify(mensajesGuardados));
-
-    setMensajeEnviado(true);
-    setFormulario({
-      nombre: "",
-      correo: "",
-      mensaje: "",
-    });
+      setMensajeEnviado(true);
+      setFormulario({
+        nombre: "",
+        correo: "",
+        mensaje: "",
+      });
+    } catch (_err) {
+      setErrorContacto("No se pudo conectar con el servidor.");
+    } finally {
+      setEnviando(false);
+    }
   };
 
   return (
@@ -219,9 +237,15 @@ function Inicio() {
                     ></textarea>
                   </div>
 
-                  <button type="submit" className="btn-submit-landing">
-                    Enviar Mensaje
+                  <button type="submit" className="btn-submit-landing" disabled={enviando}>
+                    {enviando ? "Enviando..." : "Enviar Mensaje"}
                   </button>
+
+                  {errorContacto && (
+                    <div className="form-error-alert" style={{ marginTop: "0.75rem", color: "#b91c1c" }}>
+                      ⚠️ {errorContacto}
+                    </div>
+                  )}
 
                   {mensajeEnviado && (
                     <div className="form-success-banner">

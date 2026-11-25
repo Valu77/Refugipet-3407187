@@ -251,22 +251,130 @@ body {
   margin: 5px 0;
 }
 
-.estado {
+.estado,
+.estado-admin {
   display: inline-block;
-  padding: 5px 10px;
+  padding: 5px 11px;
   border-radius: 20px;
   font-size: 12px;
   font-weight: bold;
 }
 
-.disponible {
+.disponible,
+.disponible-admin {
   background: #dff5e7;
   color: #168144;
 }
 
-.proceso {
+.proceso,
+.proceso-admin {
   background: #fff0d7;
   color: #c77700;
+}
+
+.rechazado-admin {
+  background: #ffe5e5;
+  color: #c93030;
+}
+
+.adoptada-admin {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.admin-filtros {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 18px;
+}
+
+.admin-filtro-btn {
+  border: 1px solid #dbe4ee;
+  background: #f8fafc;
+  color: #555;
+  padding: 7px 14px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.admin-filtro-btn.activo {
+  background: #0066b3;
+  color: #fff;
+  border-color: #0066b3;
+}
+
+.admin-alerta-error {
+  background: #fef2f2;
+  color: #b91c1c;
+  border: 1px solid #fecaca;
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-bottom: 18px;
+  font-size: 14px;
+}
+
+.admin-alerta-exito {
+  background: #ecfdf5;
+  color: #065f46;
+  border: 1px solid #a7f3d0;
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-bottom: 18px;
+  font-size: 14px;
+}
+
+.admin-rechazo-box {
+  background: #fff8f8;
+  border: 1px solid #fecaca;
+  border-radius: 10px;
+  padding: 18px;
+  margin-bottom: 20px;
+}
+
+.admin-rechazo-box h3 {
+  margin: 0 0 8px;
+  color: #b91c1c;
+  font-size: 16px;
+}
+
+.admin-rechazo-box textarea {
+  width: 100%;
+  border: 1px solid #fca5a5;
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-family: inherit;
+  font-size: 14px;
+  margin-bottom: 12px;
+}
+
+.admin-supervision-box {
+  margin-top: 24px;
+  padding: 20px;
+  border-radius: 10px;
+  background: #f8fbff;
+  border: 1px solid #dbeafe;
+}
+
+.admin-menu-badge {
+  background: #ff9500;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 999px;
+  margin-left: 6px;
+}
+
+.acciones .aprobar {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.acciones .aprobar:hover {
+  background: #bbf7d0;
 }
 
 .admin-tabla-seccion {
@@ -421,24 +529,7 @@ body {
   font-size: 15px;
 }
 
-@media (max-width: 1000px) {
-
-  .admin-sidebar {
-    width: 220px;
-  }
-
-  .admin-contenido {
-    width: calc(100% - 220px);
-    margin-left: 220px;
-  }
-
-  .admin-mascotas-recientes {
-    grid-template-columns: 1fr;
-  }
-
-}
-
-@media (max-width: 700px) {
+@media (max-width: 860px) {
 
   .admin-page {
     display: block;
@@ -453,6 +544,7 @@ body {
   .admin-menu {
     flex-direction: row;
     overflow-x: auto;
+    padding: 12px;
   }
 
   .admin-menu button {
@@ -461,12 +553,17 @@ body {
 
   .admin-salir {
     margin-top: 0;
+    padding: 10px 16px 16px;
   }
 
   .admin-contenido {
     width: 100%;
     margin-left: 0;
     padding: 20px;
+  }
+
+  .admin-mascotas-recientes {
+    grid-template-columns: 1fr;
   }
 
   .admin-header {

@@ -5,17 +5,19 @@ from fastapi import (
     APIRouter,
     Depends,
     HTTPException,
+    Request,
     status,
     UploadFile,
     File
 )
 
 from sqlalchemy.orm import Session
+from sqlalchemy import or_
 
 from typing import List
 
 from ..database import get_db
-from ..models import Mascota
+from ..models import Mascota, Refugio, Adopcion
 
 from ..schemas import (
     MascotaCrear,
@@ -23,7 +25,10 @@ from ..schemas import (
     MascotaRespuesta
 )
 
-from ..dependencies import get_current_admin
+from ..dependencies import (
+    get_current_admin,
+    get_current_admin_or_refugio
+)
 
 
 router = APIRouter(
@@ -31,10 +36,34 @@ router = APIRouter(
     tags=["Mascotas"]
 )
 
+STATIC_MASCOTAS_DIR = os.path.join(
+    os.path.dirname(os.path.dirname(__file__)),
+    "static",
+    "mascotas"
+)
+MAX_IMAGE_SIZE_BYTES = 5 * 1024 * 1024  # 5 MB
+
+
+def _normalizar_tamano(valor: str) -> str:
+    limpio = valor.strip()
+    if limpio.lower() == "pequeno":
+        return "Pequeño"
+    return limpio
+
+
+def _enriquecer_mascota(mascota: Mascota) -> Mascota:
+    if mascota.refugio:
+        mascota.nombre_refugio = mascota.refugio.nombre_refugio
+        mascota.ciudad_refugio = mascota.refugio.ciudad
+    else:
+        mascota.nombre_refugio = None
+        mascota.ciudad_refugio = None
+    return mascota
+
 
 # ==========================================
 # SUBIR IMAGEN DE MASCOTA
-# SOLO ADMIN
+# ADMIN O REFUGIO APROBADO
 # ==========================================
 
 @router.post(
@@ -42,12 +71,14 @@ router = APIRouter(
     status_code=status.HTTP_201_CREATED
 )
 async def subir_imagen(
+    request: Request,
     archivo: UploadFile = File(...),
-    admin = Depends(get_current_admin)
+    usuario = Depends(get_current_admin_or_refugio)
 ):
 
     extensiones_permitidas = [".jpg", ".jpeg", ".png", ".webp", ".gif"]
-    extension = os.path.splitext(archivo.filename)[1].lower()
+    nombre_original = archivo.filename or ""
+    extension = os.path.splitext(nombre_original)[1].lower()
 
     if extension not in extensiones_permitidas:
         raise HTTPException(
@@ -55,25 +86,34 @@ async def subir_imagen(
             detail="Solo se permiten imagenes (jpg, jpeg, png, webp, gif)"
         )
 
+    contenido = await archivo.read()
+    if len(contenido) == 0:
+        raise HTTPException(
+            status_code=400,
+            detail="El archivo de imagen está vacío"
+        )
+    if len(contenido) > MAX_IMAGE_SIZE_BYTES:
+        raise HTTPException(
+            status_code=400,
+            detail="La imagen supera el tamaño máximo permitido de 5 MB"
+        )
+
     nombre_archivo = f"{uuid.uuid4()}{extension}"
 
-    carpeta_destino = os.path.join("app", "static", "mascotas")
-    os.makedirs(carpeta_destino, exist_ok=True)
-
-    ruta_completa = os.path.join(carpeta_destino, nombre_archivo)
-
-    contenido = await archivo.read()
+    os.makedirs(STATIC_MASCOTAS_DIR, exist_ok=True)
+    ruta_completa = os.path.join(STATIC_MASCOTAS_DIR, nombre_archivo)
 
     with open(ruta_completa, "wb") as f:
         f.write(contenido)
 
-    url_imagen = f"http://127.0.0.1:8000/static/mascotas/{nombre_archivo}"
+    base_url = str(request.base_url).rstrip("/")
+    url_imagen = f"{base_url}/static/mascotas/{nombre_archivo}"
 
     return {"url": url_imagen}
 
 
 # ==========================================
-# VER TODAS LAS MASCOTAS
+# VER TODAS LAS MASCOTAS (CATÁLOGO PÚBLICO)
 # ==========================================
 
 @router.get(
@@ -84,13 +124,19 @@ def obtener_mascotas(
     db: Session = Depends(get_db)
 ):
 
-    mascotas = db.query(
-        Mascota
+    mascotas = db.query(Mascota).outerjoin(
+        Refugio, Mascota.refugio_id == Refugio.id
+    ).filter(
+        Mascota.estado != "Retirada",
+        or_(
+            Mascota.refugio_id.is_(None),
+            Refugio.estado == "aprobado"
+        )
     ).order_by(
         Mascota.id.desc()
     ).all()
 
-    return mascotas
+    return [_enriquecer_mascota(m) for m in mascotas]
 
 
 # ==========================================
@@ -106,10 +152,15 @@ def obtener_mascota(
     db: Session = Depends(get_db)
 ):
 
-    mascota = db.query(
-        Mascota
+    mascota = db.query(Mascota).outerjoin(
+        Refugio, Mascota.refugio_id == Refugio.id
     ).filter(
-        Mascota.id == mascota_id
+        Mascota.id == mascota_id,
+        Mascota.estado != "Retirada",
+        or_(
+            Mascota.refugio_id.is_(None),
+            Refugio.estado == "aprobado"
+        )
     ).first()
 
     if not mascota:
@@ -119,7 +170,7 @@ def obtener_mascota(
             detail="Mascota no encontrada"
         )
 
-    return mascota
+    return _enriquecer_mascota(mascota)
 
 
 # ==========================================
@@ -139,11 +190,11 @@ def crear_mascota(
 ):
 
     mascota = Mascota(
-        nombre=datos.nombre,
-        tipo=datos.tipo,
+        nombre=datos.nombre.strip(),
+        tipo=datos.tipo.strip(),
         edad=datos.edad,
-        tamaño=datos.tamaño,
-        descripcion=datos.descripcion,
+        tamaño=_normalizar_tamano(datos.tamaño),
+        descripcion=datos.descripcion.strip() if datos.descripcion else None,
         imagen=datos.imagen,
         estado="Disponible"
     )
@@ -154,7 +205,7 @@ def crear_mascota(
 
     db.refresh(mascota)
 
-    return mascota
+    return _enriquecer_mascota(mascota)
 
 
 # ==========================================
@@ -191,6 +242,10 @@ def actualizar_mascota(
     )
 
     for campo, valor in datos_actualizados.items():
+        if campo == "tamaño" and isinstance(valor, str):
+            valor = _normalizar_tamano(valor)
+        elif isinstance(valor, str):
+            valor = valor.strip()
 
         setattr(
             mascota,
@@ -202,7 +257,7 @@ def actualizar_mascota(
 
     db.refresh(mascota)
 
-    return mascota
+    return _enriquecer_mascota(mascota)
 
 
 # ==========================================
@@ -232,10 +287,23 @@ def eliminar_mascota(
             detail="Mascota no encontrada"
         )
 
+    tiene_solicitudes = db.query(Adopcion).filter(
+        Adopcion.mascota_id == mascota.id
+    ).first()
+
+    if tiene_solicitudes:
+        mascota.estado = "Retirada"
+        db.commit()
+        return {
+            "mensaje": "Mascota retirada del catálogo público conservando su historial de adopción.",
+            "retirada": True
+        }
+
     db.delete(mascota)
 
     db.commit()
 
     return {
-        "mensaje": "Mascota eliminada correctamente"
+        "mensaje": "Mascota eliminada correctamente",
+        "retirada": False
     }
