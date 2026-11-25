@@ -42,9 +42,21 @@ function PanelRefugio() {
     estado: "",
   });
 
+  // Modal detalle y gestión de solicitud de adopción
+  const [solicitudActiva, setSolicitudActiva] = useState(null);
+  const [accionSolicitud, setAccionSolicitud] = useState(null); // "aprobar" | "rechazar" | null
+  const [motivoRechazoSol, setMotivoRechazoSol] = useState("");
+  const [errorModalSol, setErrorModalSol] = useState("");
+  const [procesandoSol, setProcesandoSol] = useState(false);
+
+  // Modal confirmación para retirar mascota
+  const [mascotaARetirar, setMascotaARetirar] = useState(null);
+  const [retirandoMascota, setRetirandoMascota] = useState(false);
+
   // Estado formulario de mascotas
   const [mostrarFormMascota, setMostrarFormMascota] = useState(false);
   const [editandoMascotaId, setEditandoMascotaId] = useState(null);
+  const [tipoLegacyMascota, setTipoLegacyMascota] = useState(null);
   const [guardandoMascota, setGuardandoMascota] = useState(false);
   const [subiendoImagen, setSubiendoImagen] = useState(false);
   const [errorMascota, setErrorMascota] = useState("");
@@ -146,7 +158,7 @@ function PanelRefugio() {
     let usuario = null;
     try {
       usuario = JSON.parse(localStorage.getItem("usuario") || "null");
-    } catch (_e) {
+    } catch {
       usuario = null;
     }
 
@@ -170,6 +182,7 @@ function PanelRefugio() {
     setArchivoImagen(null);
     setPreviewImagen("");
     setEditandoMascotaId(null);
+    setTipoLegacyMascota(null);
     setErrorMascota("");
   };
 
@@ -181,9 +194,13 @@ function PanelRefugio() {
   const abrirEditarMascota = (mascota) => {
     setEditandoMascotaId(mascota.id);
     const tam = mascota["tamaño"] || mascota.tamano || "Mediano";
+    const tipoActual = mascota.tipo || "Perro";
+    setTipoLegacyMascota(
+      tipoActual !== "Perro" && tipoActual !== "Gato" ? tipoActual : null
+    );
     setFormMascota({
       nombre: mascota.nombre,
-      tipo: mascota.tipo,
+      tipo: tipoActual,
       edad: String(mascota.edad),
       tamano: tam.toLowerCase() === "pequeno" ? "Pequeño" : tam,
       descripcion: mascota.descripcion || "",
@@ -265,48 +282,76 @@ function PanelRefugio() {
     }
   };
 
-  const retirarMascota = async (mascota) => {
-    const confirmar = window.confirm(
-      `¿Seguro que deseas retirar o eliminar a "${mascota.nombre}"?`
-    );
-    if (!confirmar) return;
-
+  const confirmarRetiroMascota = async () => {
+    if (!mascotaARetirar) return;
+    setRetirandoMascota(true);
     setMensajeExito("");
     setErrorGeneral("");
     try {
-      const resp = await fetchAuth(`/refugio/mascotas/${mascota.id}`, {
+      const resp = await fetchAuth(`/refugio/mascotas/${mascotaARetirar.id}`, {
         method: "DELETE",
       });
+      setMascotaARetirar(null);
       setMensajeExito(resp.mensaje || "Mascota retirada correctamente.");
       await cargarTodo();
     } catch (err) {
       setErrorGeneral(err.message);
+    } finally {
+      setRetirandoMascota(false);
     }
   };
 
-  // ================= SOLICITUDES =================
-  const responderSolicitud = async (adopcionId, nuevoEstado) => {
-    const accion = nuevoEstado === "Aprobada" ? "aprobar" : "rechazar";
-    if (
-      !window.confirm(
-        `¿Confirmas que deseas ${accion} esta solicitud de adopción?`
-      )
-    ) {
+  // ================= MODAL SOLICITUDES =================
+  const abrirModalSolicitud = (sol) => {
+    setSolicitudActiva(sol);
+    setAccionSolicitud(null);
+    setMotivoRechazoSol("");
+    setErrorModalSol("");
+  };
+
+  const cerrarModalSolicitud = () => {
+    if (procesandoSol) return;
+    setSolicitudActiva(null);
+    setAccionSolicitud(null);
+    setMotivoRechazoSol("");
+    setErrorModalSol("");
+  };
+
+  const confirmarRespuestaSolicitud = async () => {
+    if (!solicitudActiva || !accionSolicitud) return;
+
+    const nuevoEstado = accionSolicitud === "aprobar" ? "Aprobada" : "Rechazada";
+    if (nuevoEstado === "Rechazada" && motivoRechazoSol.trim().length < 5) {
+      setErrorModalSol(
+        "Por favor escribe un motivo claro de al menos 5 caracteres para rechazar la solicitud."
+      );
       return;
     }
 
+    setProcesandoSol(true);
+    setErrorModalSol("");
     setErrorGeneral("");
     setMensajeExito("");
+
     try {
-      const resp = await fetchAuth(`/refugio/adopciones/${adopcionId}`, {
+      const resp = await fetchAuth(`/refugio/adopciones/${solicitudActiva.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ estado: nuevoEstado }),
+        body: JSON.stringify({
+          estado: nuevoEstado,
+          motivo_rechazo:
+            nuevoEstado === "Rechazada" ? motivoRechazoSol.trim() : null,
+        }),
       });
-      setMensajeExito(resp.mensaje || "Solicitud actualizada.");
+      setMensajeExito(resp.mensaje || "Solicitud actualizada correctamente.");
+      setSolicitudActiva(null);
+      setAccionSolicitud(null);
+      setMotivoRechazoSol("");
       await cargarTodo();
     } catch (err) {
-      setErrorGeneral(err.message);
+      setErrorModalSol(err.message);
+    } finally {
+      setProcesandoSol(false);
     }
   };
 
@@ -330,14 +375,13 @@ function PanelRefugio() {
         }),
       });
 
-      // Sincronizar nombre en localStorage si cambió el responsable
       try {
         const u = JSON.parse(localStorage.getItem("usuario") || "null");
         if (u && actualizado.nombre_responsable) {
           u.nombre = actualizado.nombre_responsable;
           localStorage.setItem("usuario", JSON.stringify(u));
         }
-      } catch (_e) {
+      } catch {
         // ignorar
       }
 
@@ -461,7 +505,7 @@ function PanelRefugio() {
           <div>
             <h1>{perfil.nombre_refugio || "Mi Refugio"}</h1>
             <p>
-              Gestiona tus mascotas, solicitudes de adopción y perfil institucional
+              Gestiona tus mascotas, evalúa solicitudes de adopción y administra tu perfil
             </p>
           </div>
 
@@ -484,11 +528,9 @@ function PanelRefugio() {
             {seccion === "inicio" && (
               <section>
                 <div className="panel-welcome-card">
-                  <h2>
-                    Bienvenido, {perfil.nombre_refugio || "Refugio"}
-                  </h2>
+                  <h2>Bienvenido, {perfil.nombre_refugio || "Refugio"}</h2>
                   <p>
-                    Desde este panel puedes publicar tus mascotas disponibles para adopción, revisar solicitudes de adoptantes y consultar tu historial de adopciones aprobadas.
+                    Publica perros y gatos en adopción, consulta el perfil completo de cada solicitante antes de aprobar o rechazar y revisa tu historial.
                   </p>
                 </div>
 
@@ -591,7 +633,7 @@ function PanelRefugio() {
                 <div className="panel-section-header">
                   <div>
                     <h2>Mascotas de mi refugio</h2>
-                    <p>Publica, edita o retira las mascotas a tu cargo.</p>
+                    <p>Publica perros y gatos, edita sus datos o retira publicaciones.</p>
                   </div>
                   <button
                     type="button"
@@ -605,7 +647,7 @@ function PanelRefugio() {
                       }
                     }}
                   >
-                    {mostrarFormMascota ? "Cancelar" : "+ Agregar mascota"}
+                    {mostrarFormMascota ? "Cancelar" : "+ Publicar mascota"}
                   </button>
                 </div>
 
@@ -614,7 +656,7 @@ function PanelRefugio() {
                     <h3>
                       {editandoMascotaId !== null
                         ? "Editar mascota"
-                        : "Nueva mascota del refugio"}
+                        : "Publicar nueva mascota"}
                     </h3>
 
                     {errorMascota && (
@@ -662,10 +704,13 @@ function PanelRefugio() {
                               setFormMascota({ ...formMascota, tipo: e.target.value })
                             }
                           >
-                            <option value="Perro">Perro</option>
-                            <option value="Gato">Gato</option>
-                            <option value="Ave">Ave</option>
-                            <option value="Conejo">Conejo</option>
+                            <option value="Perro">🐶 Perro</option>
+                            <option value="Gato">🐱 Gato</option>
+                            {tipoLegacyMascota && (
+                              <option value={tipoLegacyMascota}>
+                                {tipoLegacyMascota} (registro previo)
+                              </option>
+                            )}
                           </select>
                         </div>
 
@@ -717,8 +762,8 @@ function PanelRefugio() {
                             src={previewImagen}
                             alt="Vista previa"
                             style={{
-                              width: "140px",
-                              height: "140px",
+                              width: "150px",
+                              height: "150px",
                               objectFit: "cover",
                               borderRadius: "10px",
                               border: "2px solid var(--border)",
@@ -739,83 +784,90 @@ function PanelRefugio() {
                             ? "Guardando..."
                             : editandoMascotaId !== null
                             ? "Actualizar mascota"
-                            : "Guardar mascota"}
+                            : "Publicar mascota"}
                         </button>
                       </div>
                     </form>
                   </div>
                 )}
 
-                <div className="panel-table-wrap">
-                  <table className="panel-table">
-                    <thead>
-                      <tr>
-                        <th>Foto</th>
-                        <th>Nombre</th>
-                        <th>Tipo</th>
-                        <th>Tamaño</th>
-                        <th>Edad</th>
-                        <th>Estado</th>
-                        <th>Acciones</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {mascotas.map((m) => (
-                        <tr key={m.id}>
-                          <td>
-                            {m.imagen ? (
-                              <img
-                                src={m.imagen}
-                                alt={m.nombre}
-                                className="panel-thumb"
-                              />
-                            ) : (
-                              "🐾"
-                            )}
-                          </td>
-                          <td>
-                            <strong>{m.nombre}</strong>
-                          </td>
-                          <td>{m.tipo}</td>
-                          <td>{m["tamaño"] || m.tamano}</td>
-                          <td>
-                            {m.edad} {m.edad === 1 ? "año" : "años"}
-                          </td>
-                          <td>
-                            <span className={`badge-estado ${estadoBadgeClass(m.estado)}`}>
-                              {m.estado}
+                {mascotas.length === 0 ? (
+                  <div className="state-box" style={{ margin: "1rem auto" }}>
+                    <div className="state-box-icon">🐾</div>
+                    <h3>Aún no hay mascotas registradas</h3>
+                    <p>Publica tu primer perro o gato para que aparezca en el catálogo de adopción.</p>
+                    <button
+                      type="button"
+                      className="panel-btn-primary"
+                      onClick={abrirNuevaMascota}
+                    >
+                      + Publicar mascota
+                    </button>
+                  </div>
+                ) : (
+                  <div className="panel-pets-grid">
+                    {mascotas.map((m) => (
+                      <article className="panel-pet-card" key={m.id}>
+                        <div className="panel-pet-media">
+                          {m.imagen ? (
+                            <img src={m.imagen} alt={m.nombre} />
+                          ) : (
+                            <span style={{ fontSize: "3.2rem" }}>
+                              {m.tipo === "Gato" ? "🐱" : "🐶"}
                             </span>
-                          </td>
-                          <td>
-                            <div className="panel-actions">
+                          )}
+                          <span
+                            className={`badge-estado ${estadoBadgeClass(
+                              m.estado
+                            )} panel-pet-badge-float`}
+                          >
+                            {m.estado}
+                          </span>
+                        </div>
+
+                        <div className="panel-pet-body">
+                          <div className="panel-pet-title">
+                            <h3>{m.nombre}</h3>
+                            <span>{m.tipo === "Gato" ? "🐱" : "🐶"}</span>
+                          </div>
+
+                          <div className="panel-pet-chips">
+                            <span className="panel-chip">{m.tipo}</span>
+                            <span className="panel-chip">
+                              {m.edad} {m.edad === 1 ? "año" : "años"}
+                            </span>
+                            <span className="panel-chip">
+                              {m["tamaño"] || m.tamano}
+                            </span>
+                          </div>
+
+                          <p className="panel-pet-desc">
+                            {m.descripcion || "Sin descripción registrada."}
+                          </p>
+
+                          <div className="panel-pet-actions">
+                            <button
+                              type="button"
+                              className="btn-table btn-table-edit"
+                              onClick={() => abrirEditarMascota(m)}
+                            >
+                              ✏️ Editar
+                            </button>
+                            {m.estado !== "Retirada" && (
                               <button
                                 type="button"
-                                className="btn-table btn-table-edit"
-                                onClick={() => abrirEditarMascota(m)}
+                                className="btn-table btn-table-danger"
+                                onClick={() => setMascotaARetirar(m)}
                               >
-                                Editar
+                                🗑️ Retirar
                               </button>
-                              {m.estado !== "Retirada" && (
-                                <button
-                                  type="button"
-                                  className="btn-table btn-table-danger"
-                                  onClick={() => retirarMascota(m)}
-                                >
-                                  Retirar
-                                </button>
-                              )}
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                  {mascotas.length === 0 && (
-                    <p style={{ padding: "1rem 0", color: "var(--text-muted)" }}>
-                      No hay mascotas registradas todavía en este refugio.
-                    </p>
-                  )}
-                </div>
+                            )}
+                          </div>
+                        </div>
+                      </article>
+                    ))}
+                  </div>
+                )}
               </section>
             )}
 
@@ -825,7 +877,9 @@ function PanelRefugio() {
                 <div className="panel-section-header">
                   <div>
                     <h2>Solicitudes de adopción</h2>
-                    <p>Evalúa y responde las solicitudes para las mascotas de tu refugio.</p>
+                    <p>
+                      Haz clic en cualquier solicitud para ver el perfil completo del adoptante y tomar una decisión.
+                    </p>
                   </div>
 
                   <div className="panel-filter-pills">
@@ -850,20 +904,37 @@ function PanelRefugio() {
                       <tr>
                         <th>Mascota</th>
                         <th>Solicitante</th>
-                        <th>Contacto</th>
-                        <th>Hogar</th>
-                        <th>Motivo</th>
+                        <th>Ciudad y Teléfono</th>
+                        <th>Vivienda</th>
+                        <th>Fecha</th>
                         <th>Estado</th>
-                        <th>Acciones</th>
+                        <th>Acción</th>
                       </tr>
                     </thead>
                     <tbody>
                       {solicitudesFiltradas.map((sol) => (
-                        <tr key={sol.id}>
+                        <tr
+                          key={sol.id}
+                          className="panel-row-clickable"
+                          onClick={() => abrirModalSolicitud(sol)}
+                        >
                           <td>
-                            <strong>{sol.nombre_mascota}</strong>
-                            <div style={{ fontSize: "0.8rem", color: "var(--text-muted)" }}>
-                              {sol.tipo_mascota}
+                            <div style={{ display: "flex", alignItems: "center", gap: "0.65rem" }}>
+                              {sol.imagen_mascota ? (
+                                <img
+                                  src={sol.imagen_mascota}
+                                  alt={sol.nombre_mascota}
+                                  className="panel-thumb"
+                                />
+                              ) : (
+                                <span style={{ fontSize: "1.4rem" }}>🐾</span>
+                              )}
+                              <div>
+                                <strong>{sol.nombre_mascota}</strong>
+                                <div style={{ fontSize: "0.8rem", color: "var(--text-muted)" }}>
+                                  {sol.tipo_mascota}
+                                </div>
+                              </div>
                             </div>
                           </td>
                           <td>
@@ -873,18 +944,17 @@ function PanelRefugio() {
                             </div>
                           </td>
                           <td>
-                            <div>{sol.telefono}</div>
+                            <div>{sol.ciudad}</div>
                             <div style={{ fontSize: "0.8rem", color: "var(--text-muted)" }}>
-                              {sol.ciudad}
+                              {sol.telefono}
                             </div>
                           </td>
+                          <td>{sol.vivienda}</td>
                           <td>
-                            <div>{sol.vivienda}</div>
-                            <div style={{ fontSize: "0.8rem", color: "var(--text-muted)" }}>
-                              Otras mascotas: {sol.otras_mascotas}
-                            </div>
+                            {sol.fecha
+                              ? new Date(sol.fecha).toLocaleDateString("es-CO")
+                              : "-"}
                           </td>
-                          <td style={{ maxWidth: "240px" }}>{sol.motivo}</td>
                           <td>
                             <span
                               className={`badge-estado ${estadoBadgeClass(sol.estado)}`}
@@ -893,41 +963,27 @@ function PanelRefugio() {
                             </span>
                           </td>
                           <td>
-                            {sol.estado === "Pendiente" ? (
-                              <div className="panel-actions">
-                                <button
-                                  type="button"
-                                  className="btn-table btn-table-approve"
-                                  onClick={() =>
-                                    responderSolicitud(sol.id, "Aprobada")
-                                  }
-                                >
-                                  Aprobar
-                                </button>
-                                <button
-                                  type="button"
-                                  className="btn-table btn-table-danger"
-                                  onClick={() =>
-                                    responderSolicitud(sol.id, "Rechazada")
-                                  }
-                                >
-                                  Rechazar
-                                </button>
-                              </div>
-                            ) : (
-                              <span style={{ fontSize: "0.82rem", color: "var(--text-muted)" }}>
-                                Gestionada
-                              </span>
-                            )}
+                            <button
+                              type="button"
+                              className="btn-table btn-table-edit"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                abrirModalSolicitud(sol);
+                              }}
+                            >
+                              Ver perfil
+                            </button>
                           </td>
                         </tr>
                       ))}
                     </tbody>
                   </table>
                   {solicitudesFiltradas.length === 0 && (
-                    <p style={{ padding: "1rem 0", color: "var(--text-muted)" }}>
-                      No hay solicitudes en esta categoría.
-                    </p>
+                    <div className="state-box" style={{ margin: "1.5rem auto" }}>
+                      <div className="state-box-icon">📋</div>
+                      <h3>Sin solicitudes en esta categoría</h3>
+                      <p>No hay solicitudes registradas con el filtro "{filtroSolicitudes}".</p>
+                    </div>
                   )}
                 </div>
               </section>
@@ -1174,6 +1230,328 @@ function PanelRefugio() {
           </>
         )}
       </main>
+
+      {/* ================= MODAL PERFIL COMPLETO DE SOLICITUD ================= */}
+      {solicitudActiva && (
+        <div
+          className="rp-modal-overlay"
+          role="dialog"
+          aria-modal="true"
+          onClick={cerrarModalSolicitud}
+        >
+          <div className="rp-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="rp-modal-header">
+              <div>
+                <h3>Perfil completo de solicitud #{solicitudActiva.id}</h3>
+                <p>
+                  Recibida el{" "}
+                  {solicitudActiva.fecha
+                    ? new Date(solicitudActiva.fecha).toLocaleString("es-CO")
+                    : "-"}
+                </p>
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+                <span
+                  className={`badge-estado ${estadoBadgeClass(
+                    solicitudActiva.estado
+                  )}`}
+                >
+                  {solicitudActiva.estado}
+                </span>
+                <button
+                  type="button"
+                  className="rp-modal-close"
+                  onClick={cerrarModalSolicitud}
+                  aria-label="Cerrar ventana"
+                >
+                  ✕
+                </button>
+              </div>
+            </div>
+
+            <div className="rp-modal-body">
+              {/* Mascota deseada */}
+              <div className="rp-modal-pet-banner">
+                {solicitudActiva.imagen_mascota ? (
+                  <img
+                    src={solicitudActiva.imagen_mascota}
+                    alt={solicitudActiva.nombre_mascota}
+                  />
+                ) : (
+                  <div
+                    style={{
+                      width: "84px",
+                      height: "84px",
+                      borderRadius: "8px",
+                      background: "#fff",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontSize: "2.2rem",
+                    }}
+                  >
+                    🐾
+                  </div>
+                )}
+                <div>
+                  <span className="rp-detail-label">Mascota solicitada</span>
+                  <h4 style={{ margin: "0 0 4px", fontSize: "1.15rem", color: "var(--primary-dark)" }}>
+                    {solicitudActiva.nombre_mascota}
+                  </h4>
+                  <p style={{ margin: 0, fontSize: "0.9rem", color: "var(--text-main)" }}>
+                    {solicitudActiva.tipo_mascota}
+                    {solicitudActiva.edad_mascota !== undefined && solicitudActiva.edad_mascota !== null
+                      ? ` · ${solicitudActiva.edad_mascota} ${
+                          solicitudActiva.edad_mascota === 1 ? "año" : "años"
+                        }`
+                      : ""}
+                    {solicitudActiva.tamano_mascota
+                      ? ` · ${solicitudActiva.tamano_mascota}`
+                      : ""}
+                    {solicitudActiva.estado_mascota
+                      ? ` · Estado actual: ${solicitudActiva.estado_mascota}`
+                      : ""}
+                  </p>
+                </div>
+              </div>
+
+              {/* Datos del solicitante y respuestas */}
+              <div className="rp-detail-grid">
+                <div className="rp-detail-item">
+                  <span className="rp-detail-label">Nombre del solicitante</span>
+                  <span className="rp-detail-value">
+                    {solicitudActiva.solicitante?.nombre || "No disponible"}
+                  </span>
+                </div>
+
+                <div className="rp-detail-item">
+                  <span className="rp-detail-label">Correo electrónico</span>
+                  <span className="rp-detail-value">
+                    {solicitudActiva.solicitante?.correo || "No disponible"}
+                  </span>
+                </div>
+
+                <div className="rp-detail-item">
+                  <span className="rp-detail-label">Teléfono de contacto</span>
+                  <span className="rp-detail-value">{solicitudActiva.telefono}</span>
+                </div>
+
+                <div className="rp-detail-item">
+                  <span className="rp-detail-label">Ciudad de residencia</span>
+                  <span className="rp-detail-value">{solicitudActiva.ciudad}</span>
+                </div>
+
+                <div className="rp-detail-item">
+                  <span className="rp-detail-label">Tipo de vivienda</span>
+                  <span className="rp-detail-value">{solicitudActiva.vivienda}</span>
+                </div>
+
+                <div className="rp-detail-item">
+                  <span className="rp-detail-label">¿Tiene otras mascotas?</span>
+                  <span className="rp-detail-value">{solicitudActiva.otras_mascotas}</span>
+                </div>
+
+                <div className="rp-detail-item">
+                  <span className="rp-detail-label">Convivencia en el hogar</span>
+                  <span className="rp-detail-value">
+                    {solicitudActiva.convivencia || "No especificada"}
+                  </span>
+                </div>
+
+                <div className="rp-detail-item">
+                  <span className="rp-detail-label">Experiencia previa con mascotas</span>
+                  <span className="rp-detail-value">
+                    {solicitudActiva.experiencia_mascotas || "No especificada"}
+                  </span>
+                </div>
+
+                <div className="rp-detail-item full">
+                  <span className="rp-detail-label">Motivo de adopción</span>
+                  <span className="rp-detail-value">{solicitudActiva.motivo}</span>
+                </div>
+
+                <div className="rp-detail-item full">
+                  <span className="rp-detail-label">Referencias</span>
+                  <span className="rp-detail-value">
+                    {solicitudActiva.referencias || "No especificadas"}
+                  </span>
+                </div>
+
+                {solicitudActiva.motivo_rechazo && (
+                  <div
+                    className="rp-detail-item full"
+                    style={{ background: "#fef2f2", borderColor: "#fecaca" }}
+                  >
+                    <span className="rp-detail-label" style={{ color: "#b91c1c" }}>
+                      Motivo de rechazo registrado
+                    </span>
+                    <span className="rp-detail-value" style={{ color: "#991b1b" }}>
+                      {solicitudActiva.motivo_rechazo}
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              {errorModalSol && (
+                <div className="panel-alert-error" style={{ marginBottom: 0 }}>
+                  ⚠️ {errorModalSol}
+                </div>
+              )}
+
+              {/* Paso de confirmación dentro del modal */}
+              {accionSolicitud === "aprobar" && (
+                <div className="rp-confirm-box">
+                  <strong>Confirmar aprobación de adopción</strong>
+                  <p style={{ margin: 0, fontSize: "0.9rem" }}>
+                    Al aprobar esta solicitud, la mascota <strong>{solicitudActiva.nombre_mascota}</strong> pasará a estado <strong>Adoptada</strong> y se registrará en tu historial.
+                  </p>
+                  <div style={{ display: "flex", gap: "0.6rem", flexWrap: "wrap" }}>
+                    <button
+                      type="button"
+                      className="rp-btn-approve"
+                      disabled={procesandoSol}
+                      onClick={confirmarRespuestaSolicitud}
+                    >
+                      {procesandoSol ? "Procesando..." : "Sí, aprobar adopción"}
+                    </button>
+                    <button
+                      type="button"
+                      className="rp-btn-secondary"
+                      disabled={procesandoSol}
+                      onClick={() => setAccionSolicitud(null)}
+                    >
+                      Cancelar
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {accionSolicitud === "rechazar" && (
+                <div className="rp-confirm-box danger">
+                  <strong>Rechazar solicitud de adopción</strong>
+                  <p style={{ margin: 0, fontSize: "0.9rem" }}>
+                    Indica el motivo del rechazo para el adoptante (mínimo 5 caracteres).
+                  </p>
+                  <textarea
+                    rows="3"
+                    placeholder="Ej. El espacio de vivienda no se ajusta al tamaño de la mascota..."
+                    value={motivoRechazoSol}
+                    onChange={(e) => setMotivoRechazoSol(e.target.value)}
+                    disabled={procesandoSol}
+                  />
+                  <div style={{ display: "flex", gap: "0.6rem", flexWrap: "wrap" }}>
+                    <button
+                      type="button"
+                      className="rp-btn-danger"
+                      disabled={procesandoSol}
+                      onClick={confirmarRespuestaSolicitud}
+                    >
+                      {procesandoSol ? "Procesando..." : "Confirmar rechazo"}
+                    </button>
+                    <button
+                      type="button"
+                      className="rp-btn-secondary"
+                      disabled={procesandoSol}
+                      onClick={() => setAccionSolicitud(null)}
+                    >
+                      Cancelar
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="rp-modal-footer">
+              <button
+                type="button"
+                className="rp-btn-secondary"
+                onClick={cerrarModalSolicitud}
+                disabled={procesandoSol}
+              >
+                Cerrar
+              </button>
+
+              {solicitudActiva.estado === "Pendiente" && !accionSolicitud && (
+                <>
+                  <button
+                    type="button"
+                    className="rp-btn-danger"
+                    onClick={() => {
+                      setErrorModalSol("");
+                      setAccionSolicitud("rechazar");
+                    }}
+                  >
+                    Rechazar solicitud
+                  </button>
+                  <button
+                    type="button"
+                    className="rp-btn-approve"
+                    onClick={() => {
+                      setErrorModalSol("");
+                      setAccionSolicitud("aprobar");
+                    }}
+                  >
+                    Aprobar adopción
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ================= MODAL CONFIRMACIÓN RETIRAR MASCOTA ================= */}
+      {mascotaARetirar && (
+        <div
+          className="rp-modal-overlay"
+          role="dialog"
+          aria-modal="true"
+          onClick={() => !retirandoMascota && setMascotaARetirar(null)}
+        >
+          <div
+            className="rp-modal rp-modal-sm"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="rp-modal-header">
+              <div>
+                <h3>Confirmar retiro de mascota</h3>
+                <p>Esta acción quitará a la mascota del catálogo público</p>
+              </div>
+              <button
+                type="button"
+                className="rp-modal-close"
+                onClick={() => !retirandoMascota && setMascotaARetirar(null)}
+              >
+                ✕
+              </button>
+            </div>
+            <div className="rp-modal-body">
+              <p style={{ margin: 0, lineHeight: 1.55 }}>
+                ¿Estás seguro de que deseas retirar a{" "}
+                <strong>{mascotaARetirar.nombre}</strong>? Si ya tiene solicitudes de adopción asociadas, se conservará su historial marcándola como <em>Retirada</em>.
+              </p>
+            </div>
+            <div className="rp-modal-footer">
+              <button
+                type="button"
+                className="rp-btn-secondary"
+                disabled={retirandoMascota}
+                onClick={() => setMascotaARetirar(null)}
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                className="rp-btn-danger"
+                disabled={retirandoMascota}
+                onClick={confirmarRetiroMascota}
+              >
+                {retirandoMascota ? "Retirando..." : "Sí, retirar mascota"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

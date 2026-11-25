@@ -91,6 +91,9 @@ def crear_adopcion(
         vivienda=datos.vivienda.strip(),
         otras_mascotas=datos.otras_mascotas.strip(),
         motivo=datos.motivo.strip(),
+        experiencia_mascotas=datos.experiencia_mascotas.strip() if datos.experiencia_mascotas else None,
+        convivencia=datos.convivencia.strip() if datos.convivencia else None,
+        referencias=datos.referencias.strip() if datos.referencias else None,
         estado="Pendiente"
     )
 
@@ -98,6 +101,23 @@ def crear_adopcion(
     db.commit()
     db.refresh(adopcion)
 
+    return adopcion
+
+
+def _enriquecer_adopcion(adopcion: Adopcion, solicitante: Usuario, mascota: Mascota) -> Adopcion:
+    adopcion.usuario_nombre = solicitante.nombre if solicitante else None
+    adopcion.usuario_correo = solicitante.correo if solicitante else None
+    adopcion.mascota_nombre = mascota.nombre if mascota else None
+    adopcion.mascota_tipo = mascota.tipo if mascota else None
+    adopcion.mascota_imagen = mascota.imagen if mascota else None
+    adopcion.mascota_edad = mascota.edad if mascota else None
+    adopcion.mascota_tamano = mascota.tamaño if mascota else None
+    adopcion.mascota_estado = mascota.estado if mascota else None
+    adopcion.refugio_nombre = (
+        mascota.refugio.nombre_refugio
+        if mascota and mascota.refugio
+        else "RefugiPet (General)"
+    )
     return adopcion
 
 
@@ -117,17 +137,7 @@ def obtener_mis_solicitudes(
         Adopcion.id.desc()
     ).all()
 
-    resultado = []
-    for adopcion, mascota in filas:
-        adopcion.usuario_nombre = usuario.nombre
-        adopcion.usuario_correo = usuario.correo
-        adopcion.mascota_nombre = mascota.nombre
-        adopcion.mascota_tipo = mascota.tipo
-        adopcion.mascota_estado = mascota.estado
-        adopcion.refugio_nombre = mascota.refugio.nombre_refugio if mascota.refugio else "RefugiPet (General)"
-        resultado.append(adopcion)
-
-    return resultado
+    return [_enriquecer_adopcion(adopcion, usuario, mascota) for adopcion, mascota in filas]
 
 
 @router.get(
@@ -148,17 +158,7 @@ def obtener_adopciones(
         Adopcion.id.desc()
     ).all()
 
-    resultado = []
-    for adopcion, solicitante, mascota in filas:
-        adopcion.usuario_nombre = solicitante.nombre
-        adopcion.usuario_correo = solicitante.correo
-        adopcion.mascota_nombre = mascota.nombre
-        adopcion.mascota_tipo = mascota.tipo
-        adopcion.mascota_estado = mascota.estado
-        adopcion.refugio_nombre = mascota.refugio.nombre_refugio if mascota.refugio else "RefugiPet (General)"
-        resultado.append(adopcion)
-
-    return resultado
+    return [_enriquecer_adopcion(adopcion, solicitante, mascota) for adopcion, solicitante, mascota in filas]
 
 
 @router.put(
@@ -209,17 +209,13 @@ def actualizar_adopcion(
             )
         if mascota:
             mascota.estado = "Adoptada"
+        adopcion.motivo_rechazo = None
+    elif datos.estado == "Rechazada" and datos.motivo_rechazo:
+        adopcion.motivo_rechazo = datos.motivo_rechazo.strip()
 
     adopcion.estado = datos.estado
 
     db.commit()
     db.refresh(adopcion)
 
-    adopcion.usuario_nombre = adopcion.usuario.nombre if adopcion.usuario else None
-    adopcion.usuario_correo = adopcion.usuario.correo if adopcion.usuario else None
-    adopcion.mascota_nombre = mascota.nombre if mascota else None
-    adopcion.mascota_tipo = mascota.tipo if mascota else None
-    adopcion.mascota_estado = mascota.estado if mascota else None
-    adopcion.refugio_nombre = mascota.refugio.nombre_refugio if mascota and mascota.refugio else "RefugiPet (General)"
-
-    return adopcion
+    return _enriquecer_adopcion(adopcion, adopcion.usuario, mascota)

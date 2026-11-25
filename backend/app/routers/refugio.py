@@ -100,6 +100,19 @@ def listar_mis_mascotas(
     return mascotas
 
 
+TIPOS_MASCOTA_PERMITIDOS = {"Perro", "Gato"}
+
+
+def _normalizar_tipo_mascota(tipo: str) -> str:
+    limpio = tipo.strip().capitalize()
+    if limpio not in TIPOS_MASCOTA_PERMITIDOS:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Solo se permiten mascotas de tipo Perro o Gato."
+        )
+    return limpio
+
+
 @router.post(
     "/mascotas",
     response_model=MascotaRespuesta,
@@ -112,10 +125,12 @@ def registrar_mascota_refugio(
 ):
     _, refugio = auth_data
 
+    tipo_normalizado = _normalizar_tipo_mascota(datos.tipo)
+
     nueva_mascota = Mascota(
         refugio_id=refugio.id,
         nombre=datos.nombre.strip(),
-        tipo=datos.tipo.strip(),
+        tipo=tipo_normalizado,
         edad=datos.edad,
         tamaño="Pequeño" if datos.tamaño.strip().lower() == "pequeno" else datos.tamaño.strip(),
         descripcion=datos.descripcion.strip() if datos.descripcion else None,
@@ -157,7 +172,13 @@ def actualizar_mascota_refugio(
 
     datos_actualizados = datos.model_dump(exclude_unset=True)
     for campo, valor in datos_actualizados.items():
-        if campo == "tamaño" and isinstance(valor, str):
+        if campo == "tipo" and isinstance(valor, str):
+            # Conservar tipo antiguo si ya existía y no cambió; si se cambia, exigir Perro o Gato
+            if valor.strip().lower() != (mascota.tipo or "").lower():
+                valor = _normalizar_tipo_mascota(valor)
+            else:
+                valor = mascota.tipo
+        elif campo == "tamaño" and isinstance(valor, str):
             valor = "Pequeño" if valor.strip().lower() == "pequeno" else valor.strip()
         elif isinstance(valor, str):
             valor = valor.strip()
@@ -244,6 +265,9 @@ def listar_solicitudes_refugio(
             "mascota_id": mascota.id,
             "nombre_mascota": mascota.nombre,
             "tipo_mascota": mascota.tipo,
+            "edad_mascota": mascota.edad,
+            "tamano_mascota": mascota.tamaño,
+            "descripcion_mascota": mascota.descripcion,
             "imagen_mascota": mascota.imagen,
             "estado_mascota": mascota.estado,
             "solicitante": {
@@ -256,7 +280,11 @@ def listar_solicitudes_refugio(
             "vivienda": adopcion.vivienda,
             "otras_mascotas": adopcion.otras_mascotas,
             "motivo": adopcion.motivo,
+            "experiencia_mascotas": adopcion.experiencia_mascotas,
+            "convivencia": adopcion.convivencia,
+            "referencias": adopcion.referencias,
             "estado": adopcion.estado,
+            "motivo_rechazo": adopcion.motivo_rechazo,
             "fecha": adopcion.fecha
         })
 
@@ -294,6 +322,12 @@ def responder_solicitud_adopcion(
             detail=f"Estado inválido. Debe ser uno de: {estados_validos}"
         )
 
+    if adopcion.estado != "Pendiente" and datos.estado != adopcion.estado:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Esta solicitud ya fue gestionada anteriormente."
+        )
+
     # Si se aprueba la adopción, marcar la mascota como 'Adoptada'
     mascota = db.query(Mascota).filter(Mascota.id == adopcion.mascota_id).first()
     if datos.estado == "Aprobada":
@@ -304,6 +338,15 @@ def responder_solicitud_adopcion(
             )
         if mascota:
             mascota.estado = "Adoptada"
+        adopcion.motivo_rechazo = None
+    elif datos.estado == "Rechazada":
+        motivo = (datos.motivo_rechazo or "").strip()
+        if len(motivo) < 5:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Debe proporcionar un motivo de al menos 5 caracteres al rechazar la solicitud."
+            )
+        adopcion.motivo_rechazo = motivo
 
     adopcion.estado = datos.estado
 
@@ -313,7 +356,8 @@ def responder_solicitud_adopcion(
     return {
         "mensaje": f"Solicitud de adopción actualizada a '{adopcion.estado}' correctamente.",
         "id": adopcion.id,
-        "estado": adopcion.estado
+        "estado": adopcion.estado,
+        "motivo_rechazo": adopcion.motivo_rechazo
     }
 
 

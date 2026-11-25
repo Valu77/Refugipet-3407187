@@ -127,6 +127,11 @@ class Refugio(Base):
         nullable=True
     )
 
+    motivo_suspension = Column(
+        Text,
+        nullable=True
+    )
+
     creado_en = Column(
         DateTime(timezone=True),
         server_default=func.now()
@@ -266,10 +271,30 @@ class Adopcion(Base):
         nullable=False
     )
 
+    experiencia_mascotas = Column(
+        Text,
+        nullable=True
+    )
+
+    convivencia = Column(
+        String(200),
+        nullable=True
+    )
+
+    referencias = Column(
+        Text,
+        nullable=True
+    )
+
     estado = Column(
         String(30),
         default="Pendiente",
         nullable=False
+    )
+
+    motivo_rechazo = Column(
+        Text,
+        nullable=True
     )
 
     fecha = Column(

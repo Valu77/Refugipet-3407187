@@ -112,9 +112,15 @@ def get_current_refugio(
         )
 
     if refugio.estado == "suspendido":
+        motivo = getattr(refugio, "motivo_suspension", None)
+        detalle = (
+            f"Este refugio se encuentra suspendido. Motivo: {motivo}"
+            if motivo
+            else "Este refugio se encuentra suspendido. Por favor contacta al administrador."
+        )
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Este refugio se encuentra suspendido. Por favor contacta al administrador."
+            detail=detalle
         )
 
     if refugio.estado != "aprobado":

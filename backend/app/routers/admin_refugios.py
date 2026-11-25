@@ -72,8 +72,15 @@ def aprobar_refugio(
             detail="Refugio no encontrado"
         )
 
+    if refugio.estado != "pendiente":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Solo se pueden aprobar solicitudes de refugio que estén en estado pendiente."
+        )
+
     refugio.estado = "aprobado"
     refugio.motivo_rechazo = None
+    refugio.motivo_suspension = None
     db.commit()
     db.refresh(refugio)
 
@@ -103,6 +110,12 @@ def rechazar_refugio(
             detail="Refugio no encontrado"
         )
 
+    if refugio.estado != "pendiente":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Solo se pueden rechazar solicitudes de refugio que estén en estado pendiente."
+        )
+
     if not datos.motivo_rechazo or len(datos.motivo_rechazo.strip()) < 5:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -111,6 +124,7 @@ def rechazar_refugio(
 
     refugio.estado = "rechazado"
     refugio.motivo_rechazo = datos.motivo_rechazo.strip()
+    refugio.motivo_suspension = None
     db.commit()
     db.refresh(refugio)
 
@@ -129,6 +143,7 @@ def rechazar_refugio(
 )
 def suspender_refugio(
     refugio_id: int,
+    datos: Optional[RefugioGestionEstado] = None,
     db: Session = Depends(get_db),
     admin: Usuario = Depends(get_current_admin)
 ):
@@ -139,7 +154,24 @@ def suspender_refugio(
             detail="Refugio no encontrado"
         )
 
+    if refugio.estado != "aprobado":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Solo se pueden suspender refugios que estén aprobados."
+        )
+
+    motivo = ""
+    if datos:
+        motivo = (datos.motivo_suspension or datos.motivo_rechazo or "").strip()
+
+    if len(motivo) < 5:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Debe proporcionar un motivo de al menos 5 caracteres para suspender el refugio."
+        )
+
     refugio.estado = "suspendido"
+    refugio.motivo_suspension = motivo
     db.commit()
     db.refresh(refugio)
 
@@ -164,8 +196,15 @@ def reactivar_refugio(
             detail="Refugio no encontrado"
         )
 
+    if refugio.estado != "suspendido":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Solo se pueden reactivar refugios que estén suspendidos."
+        )
+
     refugio.estado = "aprobado"
     refugio.motivo_rechazo = None
+    refugio.motivo_suspension = None
     db.commit()
     db.refresh(refugio)
 
@@ -192,6 +231,12 @@ def obtener_mascotas_de_refugio(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Refugio no encontrado"
+        )
+
+    if refugio.estado != "aprobado":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="No es posible consultar las mascotas porque el refugio no se encuentra aprobado."
         )
 
     mascotas = db.query(Mascota).filter(

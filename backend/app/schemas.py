@@ -104,6 +104,7 @@ class MascotaRespuesta(BaseModel):
     descripcion: Optional[str] = None
     imagen: Optional[str] = None
     estado: str
+    en_proceso: bool = False
     creado_en: datetime
 
     class Config:
@@ -156,6 +157,7 @@ class RefugioRespuesta(BaseModel):
     direccion: str
     estado: str
     motivo_rechazo: Optional[str] = None
+    motivo_suspension: Optional[str] = None
     total_mascotas: Optional[int] = None
     creado_en: datetime
 
@@ -194,8 +196,9 @@ class RefugioCambiarPassword(BaseModel):
 
 class RefugioGestionEstado(BaseModel):
 
-    estado: str
+    estado: Optional[str] = None
     motivo_rechazo: Optional[str] = None
+    motivo_suspension: Optional[str] = None
 
 
 class DashboardRefugioRespuesta(BaseModel):
@@ -247,11 +250,15 @@ class AdopcionCrear(BaseModel):
     vivienda: str
     otras_mascotas: str
     motivo: str
+    experiencia_mascotas: Optional[str] = None
+    convivencia: Optional[str] = None
+    referencias: Optional[str] = None
 
 
 class AdopcionActualizar(BaseModel):
 
     estado: str
+    motivo_rechazo: Optional[str] = None
 
 
 class AdopcionRespuesta(BaseModel):
@@ -264,7 +271,11 @@ class AdopcionRespuesta(BaseModel):
     vivienda: str
     otras_mascotas: str
     motivo: str
+    experiencia_mascotas: Optional[str] = None
+    convivencia: Optional[str] = None
+    referencias: Optional[str] = None
     estado: str
+    motivo_rechazo: Optional[str] = None
     fecha: datetime
 
     class Config:
@@ -277,6 +288,9 @@ class AdopcionConDetallesRespuesta(AdopcionRespuesta):
     usuario_correo: Optional[str] = None
     mascota_nombre: Optional[str] = None
     mascota_tipo: Optional[str] = None
+    mascota_imagen: Optional[str] = None
+    mascota_edad: Optional[int] = None
+    mascota_tamano: Optional[str] = None
     mascota_estado: Optional[str] = None
     refugio_nombre: Optional[str] = None
 

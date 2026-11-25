@@ -51,13 +51,32 @@ def _normalizar_tamano(valor: str) -> str:
     return limpio
 
 
-def _enriquecer_mascota(mascota: Mascota) -> Mascota:
+TIPOS_MASCOTA_PERMITIDOS = {"Perro", "Gato"}
+
+
+def _normalizar_tipo_mascota(tipo: str) -> str:
+    limpio = tipo.strip().capitalize()
+    if limpio not in TIPOS_MASCOTA_PERMITIDOS:
+        raise HTTPException(
+            status_code=400,
+            detail="Solo se permiten mascotas de tipo Perro o Gato."
+        )
+    return limpio
+
+
+def _enriquecer_mascota(mascota: Mascota, mascotas_en_proceso: set = None) -> Mascota:
     if mascota.refugio:
         mascota.nombre_refugio = mascota.refugio.nombre_refugio
         mascota.ciudad_refugio = mascota.refugio.ciudad
     else:
         mascota.nombre_refugio = None
         mascota.ciudad_refugio = None
+    if mascotas_en_proceso is not None:
+        mascota.en_proceso = (
+            mascota.estado == "Disponible" and mascota.id in mascotas_en_proceso
+        )
+    else:
+        mascota.en_proceso = False
     return mascota
 
 
@@ -136,7 +155,14 @@ def obtener_mascotas(
         Mascota.id.desc()
     ).all()
 
-    return [_enriquecer_mascota(m) for m in mascotas]
+    ids_en_proceso = {
+        row[0]
+        for row in db.query(Adopcion.mascota_id).filter(
+            Adopcion.estado == "Pendiente"
+        ).distinct().all()
+    }
+
+    return [_enriquecer_mascota(m, ids_en_proceso) for m in mascotas]
 
 
 # ==========================================
@@ -170,7 +196,12 @@ def obtener_mascota(
             detail="Mascota no encontrada"
         )
 
-    return _enriquecer_mascota(mascota)
+    tiene_pendiente = db.query(Adopcion.id).filter(
+        Adopcion.mascota_id == mascota.id,
+        Adopcion.estado == "Pendiente"
+    ).first() is not None
+
+    return _enriquecer_mascota(mascota, {mascota.id} if tiene_pendiente else set())
 
 
 # ==========================================
@@ -189,9 +220,11 @@ def crear_mascota(
     admin = Depends(get_current_admin)
 ):
 
+    tipo_normalizado = _normalizar_tipo_mascota(datos.tipo)
+
     mascota = Mascota(
         nombre=datos.nombre.strip(),
-        tipo=datos.tipo.strip(),
+        tipo=tipo_normalizado,
         edad=datos.edad,
         tamaño=_normalizar_tamano(datos.tamaño),
         descripcion=datos.descripcion.strip() if datos.descripcion else None,
@@ -242,7 +275,12 @@ def actualizar_mascota(
     )
 
     for campo, valor in datos_actualizados.items():
-        if campo == "tamaño" and isinstance(valor, str):
+        if campo == "tipo" and isinstance(valor, str):
+            if valor.strip().lower() != (mascota.tipo or "").lower():
+                valor = _normalizar_tipo_mascota(valor)
+            else:
+                valor = mascota.tipo
+        elif campo == "tamaño" and isinstance(valor, str):
             valor = _normalizar_tamano(valor)
         elif isinstance(valor, str):
             valor = valor.strip()
