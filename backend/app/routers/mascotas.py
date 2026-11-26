@@ -92,7 +92,7 @@ def _enriquecer_mascota(mascota: Mascota, mascotas_en_proceso: set = None) -> Ma
 async def subir_imagen(
     request: Request,
     archivo: UploadFile = File(...),
-    usuario = Depends(get_current_admin_or_refugio)
+    usuario=Depends(get_current_admin_or_refugio)
 ):
 
     extensiones_permitidas = [".jpg", ".jpeg", ".png", ".webp", ".gif"]
@@ -217,7 +217,7 @@ def obtener_mascota(
 def crear_mascota(
     datos: MascotaCrear,
     db: Session = Depends(get_db),
-    admin = Depends(get_current_admin)
+    admin=Depends(get_current_admin)
 ):
 
     tipo_normalizado = _normalizar_tipo_mascota(datos.tipo)
@@ -254,7 +254,7 @@ def actualizar_mascota(
     mascota_id: int,
     datos: MascotaActualizar,
     db: Session = Depends(get_db),
-    admin = Depends(get_current_admin)
+    admin=Depends(get_current_admin)
 ):
 
     mascota = db.query(
@@ -309,7 +309,7 @@ def actualizar_mascota(
 def eliminar_mascota(
     mascota_id: int,
     db: Session = Depends(get_db),
-    admin = Depends(get_current_admin)
+    admin=Depends(get_current_admin)
 ):
 
     mascota = db.query(
@@ -333,7 +333,10 @@ def eliminar_mascota(
         mascota.estado = "Retirada"
         db.commit()
         return {
-            "mensaje": "Mascota retirada del catálogo público conservando su historial de adopción.",
+            "mensaje": (
+                "Mascota retirada del catálogo público "
+                "conservando su historial de adopción."
+            ),
             "retirada": True
         }
 

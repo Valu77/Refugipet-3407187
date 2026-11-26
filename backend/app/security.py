@@ -7,7 +7,8 @@ import os
 
 load_dotenv()
 
-SECRET_KEY = os.getenv("SECRET_KEY", "refugipet_super_secret_jwt_key_2026_secure_key_change_in_production")
+SECRET_KEY = os.getenv(
+    "SECRET_KEY", "refugipet_super_secret_jwt_key_2026_secure_key_change_in_production")
 
 ALGORITHM = os.getenv(
     "ALGORITHM",

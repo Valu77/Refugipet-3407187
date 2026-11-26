@@ -5,10 +5,9 @@ from fastapi import (
     status
 )
 from sqlalchemy.orm import Session
-from typing import List, Dict, Any
-
+from typing import List
 from ..database import get_db
-from ..models import Mascota, Adopcion, Refugio, Usuario
+from ..models import Mascota, Adopcion, Usuario
 from ..schemas import (
     MascotaCrear,
     MascotaActualizar,
@@ -39,7 +38,7 @@ router = APIRouter(
 )
 def obtener_dashboard_refugio(
     db: Session = Depends(get_db),
-    auth_data = Depends(get_current_refugio)
+    auth_data=Depends(get_current_refugio)
 ):
     _, refugio = auth_data
 
@@ -89,7 +88,7 @@ def obtener_dashboard_refugio(
 )
 def listar_mis_mascotas(
     db: Session = Depends(get_db),
-    auth_data = Depends(get_current_refugio)
+    auth_data=Depends(get_current_refugio)
 ):
     _, refugio = auth_data
 
@@ -121,7 +120,7 @@ def _normalizar_tipo_mascota(tipo: str) -> str:
 def registrar_mascota_refugio(
     datos: MascotaCrear,
     db: Session = Depends(get_db),
-    auth_data = Depends(get_current_refugio)
+    auth_data=Depends(get_current_refugio)
 ):
     _, refugio = auth_data
 
@@ -147,6 +146,41 @@ def registrar_mascota_refugio(
     return nueva_mascota
 
 
+def _normalizar_campo_mascota(campo, valor, mascota):
+    if not isinstance(valor, str):
+        return valor
+
+    if campo == "tipo":
+        tipo_actual = (mascota.tipo or "").lower()
+
+        if valor.strip().lower() != tipo_actual:
+            return _normalizar_tipo_mascota(valor)
+
+        return mascota.tipo
+
+    if campo == "tamaño":
+        return (
+            "Pequeño"
+            if valor.strip().lower() == "pequeno"
+            else valor.strip()
+        )
+
+    return valor.strip()
+
+
+def _aplicar_datos_mascota(mascota, datos):
+    datos_actualizados = datos.model_dump(exclude_unset=True)
+
+    for campo, valor in datos_actualizados.items():
+        valor = _normalizar_campo_mascota(
+            campo,
+            valor,
+            mascota
+        )
+
+        setattr(mascota, campo, valor)
+
+
 @router.put(
     "/mascotas/{mascota_id}",
     response_model=MascotaRespuesta
@@ -155,7 +189,7 @@ def actualizar_mascota_refugio(
     mascota_id: int,
     datos: MascotaActualizar,
     db: Session = Depends(get_db),
-    auth_data = Depends(get_current_refugio)
+    auth_data=Depends(get_current_refugio)
 ):
     _, refugio = auth_data
 
@@ -170,22 +204,11 @@ def actualizar_mascota_refugio(
             detail="Mascota no encontrada o no pertenece a tu refugio"
         )
 
-    datos_actualizados = datos.model_dump(exclude_unset=True)
-    for campo, valor in datos_actualizados.items():
-        if campo == "tipo" and isinstance(valor, str):
-            # Conservar tipo antiguo si ya existía y no cambió; si se cambia, exigir Perro o Gato
-            if valor.strip().lower() != (mascota.tipo or "").lower():
-                valor = _normalizar_tipo_mascota(valor)
-            else:
-                valor = mascota.tipo
-        elif campo == "tamaño" and isinstance(valor, str):
-            valor = "Pequeño" if valor.strip().lower() == "pequeno" else valor.strip()
-        elif isinstance(valor, str):
-            valor = valor.strip()
-        setattr(mascota, campo, valor)
+    _aplicar_datos_mascota(mascota, datos)
 
     db.commit()
     db.refresh(mascota)
+
     mascota.nombre_refugio = refugio.nombre_refugio
     mascota.ciudad_refugio = refugio.ciudad
 
@@ -198,7 +221,7 @@ def actualizar_mascota_refugio(
 def retirar_mascota_refugio(
     mascota_id: int,
     db: Session = Depends(get_db),
-    auth_data = Depends(get_current_refugio)
+    auth_data=Depends(get_current_refugio)
 ):
     _, refugio = auth_data
 
@@ -242,7 +265,7 @@ def retirar_mascota_refugio(
 )
 def listar_solicitudes_refugio(
     db: Session = Depends(get_db),
-    auth_data = Depends(get_current_refugio)
+    auth_data=Depends(get_current_refugio)
 ):
     _, refugio = auth_data
 
@@ -291,6 +314,54 @@ def listar_solicitudes_refugio(
     return resultado
 
 
+def _validar_estado_solicitud(adopcion, datos):
+    estados_validos = ["Pendiente", "Aprobada", "Rechazada"]
+
+    if datos.estado not in estados_validos:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Estado inválido. Debe ser uno de: {estados_validos}"
+        )
+
+    if adopcion.estado != "Pendiente" and datos.estado != adopcion.estado:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Esta solicitud ya fue gestionada anteriormente."
+        )
+
+
+def _aprobar_solicitud_adopcion(adopcion, mascota):
+    if (
+        mascota
+        and mascota.estado == "Adoptada"
+        and adopcion.estado != "Aprobada"
+    ):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Esta mascota ya fue marcada como adoptada en otra solicitud."
+        )
+
+    if mascota:
+        mascota.estado = "Adoptada"
+
+    adopcion.motivo_rechazo = None
+
+
+def _rechazar_solicitud_adopcion(adopcion, datos):
+    motivo = (datos.motivo_rechazo or "").strip()
+
+    if len(motivo) < 5:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=(
+                "Debe proporcionar un motivo de al menos "
+                "5 caracteres al rechazar la solicitud."
+            )
+        )
+
+    adopcion.motivo_rechazo = motivo
+
+
 @router.put(
     "/adopciones/{adopcion_id}"
 )
@@ -298,7 +369,7 @@ def responder_solicitud_adopcion(
     adopcion_id: int,
     datos: AdopcionActualizar,
     db: Session = Depends(get_db),
-    auth_data = Depends(get_current_refugio)
+    auth_data=Depends(get_current_refugio)
 ):
     _, refugio = auth_data
 
@@ -315,38 +386,17 @@ def responder_solicitud_adopcion(
             detail="Solicitud de adopción no encontrada o no pertenece a tus mascotas"
         )
 
-    estados_validos = ["Pendiente", "Aprobada", "Rechazada"]
-    if datos.estado not in estados_validos:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Estado inválido. Debe ser uno de: {estados_validos}"
-        )
+    _validar_estado_solicitud(adopcion, datos)
 
-    if adopcion.estado != "Pendiente" and datos.estado != adopcion.estado:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Esta solicitud ya fue gestionada anteriormente."
-        )
+    mascota = db.query(Mascota).filter(
+        Mascota.id == adopcion.mascota_id
+    ).first()
 
-    # Si se aprueba la adopción, marcar la mascota como 'Adoptada'
-    mascota = db.query(Mascota).filter(Mascota.id == adopcion.mascota_id).first()
     if datos.estado == "Aprobada":
-        if mascota and mascota.estado == "Adoptada" and adopcion.estado != "Aprobada":
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Esta mascota ya fue marcada como adoptada en otra solicitud."
-            )
-        if mascota:
-            mascota.estado = "Adoptada"
-        adopcion.motivo_rechazo = None
+        _aprobar_solicitud_adopcion(adopcion, mascota)
+
     elif datos.estado == "Rechazada":
-        motivo = (datos.motivo_rechazo or "").strip()
-        if len(motivo) < 5:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Debe proporcionar un motivo de al menos 5 caracteres al rechazar la solicitud."
-            )
-        adopcion.motivo_rechazo = motivo
+        _rechazar_solicitud_adopcion(adopcion, datos)
 
     adopcion.estado = datos.estado
 
@@ -370,7 +420,7 @@ def responder_solicitud_adopcion(
 )
 def obtener_historial_adopciones(
     db: Session = Depends(get_db),
-    auth_data = Depends(get_current_refugio)
+    auth_data=Depends(get_current_refugio)
 ):
     _, refugio = auth_data
 
@@ -414,7 +464,7 @@ def obtener_historial_adopciones(
     response_model=RefugioRespuesta
 )
 def obtener_perfil_refugio(
-    auth_data = Depends(get_current_refugio)
+    auth_data=Depends(get_current_refugio)
 ):
     usuario, refugio = auth_data
     refugio.correo = usuario.correo
@@ -428,7 +478,7 @@ def obtener_perfil_refugio(
 def actualizar_perfil_refugio(
     datos: RefugioActualizarPerfil,
     db: Session = Depends(get_db),
-    auth_data = Depends(get_current_refugio)
+    auth_data=Depends(get_current_refugio)
 ):
     usuario, refugio = auth_data
 
@@ -457,7 +507,7 @@ def actualizar_perfil_refugio(
 def cambiar_password_refugio(
     datos: RefugioCambiarPassword,
     db: Session = Depends(get_db),
-    auth_data = Depends(get_current_refugio)
+    auth_data=Depends(get_current_refugio)
 ):
     usuario, _ = auth_data
 

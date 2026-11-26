@@ -101,7 +101,10 @@ def get_current_refugio(
     if refugio.estado == "pendiente":
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Tu solicitud de registro como refugio está pendiente de aprobación por el administrador general."
+            detail=(
+                            "Tu solicitud de registro como refugio está "
+                            "pendiente de aprobación por el administrador general."
+                            )
         )
 
     if refugio.estado == "rechazado":

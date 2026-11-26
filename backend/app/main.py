@@ -8,7 +8,7 @@ from .database import (
     engine
 )
 
-from . import models
+from . import models  # noqa: F401
 
 from .routers import (
     auth,

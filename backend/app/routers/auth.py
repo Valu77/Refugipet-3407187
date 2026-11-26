@@ -167,6 +167,118 @@ def registrar_refugio(
 # LOGIN
 # ==========================================
 
+
+# ==========================================
+# LOGIN
+# ==========================================
+
+def _registrar_intento_fallido(clave_ip, clave_cuenta):
+    login_rate_limiter.record_failed_attempt(clave_ip)
+    login_rate_limiter.record_failed_attempt(clave_cuenta)
+
+    raise HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Correo o contraseña incorrectos"
+    )
+
+
+def _validar_credenciales(
+    datos, correo_normalizado, db, clave_ip, clave_cuenta
+):
+    usuario = db.query(
+        Usuario
+    ).filter(
+        func.lower(Usuario.correo) == correo_normalizado
+    ).first()
+
+    if not usuario:
+        login_rate_limiter.record_failed_attempt(clave_ip)
+        login_rate_limiter.record_failed_attempt(clave_cuenta)
+
+        verify_password(
+            datos.password,
+            "$argon2id$v=19$m=65536,t=3,p=4$dummy$dummy"
+        )
+
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Correo o contraseña incorrectos"
+        )
+
+    if not verify_password(datos.password, usuario.password):
+        _registrar_intento_fallido(clave_ip, clave_cuenta)
+
+    return usuario
+
+
+def _validar_estado_refugio(usuario, db):
+    if usuario.rol != "refugio":
+        return
+
+    refugio = db.query(Refugio).filter(
+        Refugio.usuario_id == usuario.id
+    ).first()
+
+    if not refugio:
+        return
+
+    if refugio.estado == "pendiente":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=(
+                "Tu solicitud de registro como refugio está "
+                "pendiente de aprobación por el administrador general."
+            )
+        )
+
+    if refugio.estado == "rechazado":
+        motivo = (
+            refugio.motivo_rechazo
+            or "No especificado por el administrador"
+        )
+
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=f"Tu solicitud de registro fue rechazada. Motivo: {motivo}"
+        )
+
+    if refugio.estado == "suspendido":
+        motivo = getattr(refugio, "motivo_suspension", None)
+
+        detalle = (
+            f"Este refugio se encuentra suspendido. Motivo: {motivo}"
+            if motivo
+            else (
+                "Este refugio se encuentra temporalmente suspendido. "
+                "Por favor contacta al administrador general."
+            )
+        )
+
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=detalle
+        )
+
+    if refugio.estado != "aprobado":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Tu cuenta de refugio no cuenta con autorización activa."
+        )
+
+
+def _generar_token_usuario(usuario):
+    payload_token = {
+        "id": usuario.id,
+        "correo": usuario.correo,
+        "rol": usuario.rol
+    }
+
+    if usuario.rol == "refugio" and usuario.refugio:
+        payload_token["refugio_id"] = usuario.refugio.id
+
+    return create_access_token(payload_token)
+
+
 @router.post(
     "/login",
     response_model=Token
@@ -178,96 +290,32 @@ def login(
 ):
     correo_normalizado = datos.correo.strip().lower()
 
-    # Obtener IP del cliente para mitigación de ataques distribuidos
-    ip_cliente = request.client.host if request.client else "desconocida"
+    ip_cliente = (
+        request.client.host
+        if request.client
+        else "desconocida"
+    )
 
-    # Claves para control de tasa (por IP y por cuenta objetivo)
     clave_ip = f"ip:{ip_cliente}"
     clave_cuenta = f"email:{correo_normalizado}"
 
-    # 1. Comprobar bloqueo por demasiados intentos repetidos
     login_rate_limiter.check_rate_limit(clave_ip, "dirección IP")
     login_rate_limiter.check_rate_limit(clave_cuenta, "cuenta")
 
-    usuario = db.query(
-        Usuario
-    ).filter(
-        func.lower(Usuario.correo) == correo_normalizado
-    ).first()
-
-    if not usuario:
-        # Registrar intento fallido para proteger contra enumeración y fuerza bruta
-        login_rate_limiter.record_failed_attempt(clave_ip)
-        login_rate_limiter.record_failed_attempt(clave_cuenta)
-
-        # Hash simulado para evitar timing attacks (ataques de tiempo)
-        verify_password(datos.password, "$argon2id$v=19$m=65536,t=3,p=4$dummy$dummy")
-
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Correo o contraseña incorrectos"
-        )
-
-    password_correcta = verify_password(
-        datos.password,
-        usuario.password
+    usuario = _validar_credenciales(
+        datos,
+        correo_normalizado,
+        db,
+        clave_ip,
+        clave_cuenta
     )
 
-    if not password_correcta:
-        login_rate_limiter.record_failed_attempt(clave_ip)
-        login_rate_limiter.record_failed_attempt(clave_cuenta)
+    _validar_estado_refugio(usuario, db)
 
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Correo o contraseña incorrectos"
-        )
-
-    # Si es cuenta de tipo refugio, comprobar su estado de aprobación
-    if usuario.rol == "refugio":
-        refugio = db.query(Refugio).filter(Refugio.usuario_id == usuario.id).first()
-        if refugio:
-            if refugio.estado == "pendiente":
-                raise HTTPException(
-                    status_code=status.HTTP_403_FORBIDDEN,
-                    detail="Tu solicitud de registro como refugio está pendiente de aprobación por el administrador general."
-                )
-            elif refugio.estado == "rechazado":
-                motivo = refugio.motivo_rechazo or "No especificado por el administrador"
-                raise HTTPException(
-                    status_code=status.HTTP_403_FORBIDDEN,
-                    detail=f"Tu solicitud de registro fue rechazada. Motivo: {motivo}"
-                )
-            elif refugio.estado == "suspendido":
-                motivo = getattr(refugio, "motivo_suspension", None)
-                detalle = (
-                    f"Este refugio se encuentra suspendido. Motivo: {motivo}"
-                    if motivo
-                    else "Este refugio se encuentra temporalmente suspendido. Por favor contacta al administrador general."
-                )
-                raise HTTPException(
-                    status_code=status.HTTP_403_FORBIDDEN,
-                    detail=detalle
-                )
-            elif refugio.estado != "aprobado":
-                raise HTTPException(
-                    status_code=status.HTTP_403_FORBIDDEN,
-                    detail="Tu cuenta de refugio no cuenta con autorización activa."
-                )
-
-    # Restablecer intentos fallidos tras inicio de sesión exitoso
     login_rate_limiter.reset_attempts(clave_ip)
     login_rate_limiter.reset_attempts(clave_cuenta)
 
-    payload_token = {
-        "id": usuario.id,
-        "correo": usuario.correo,
-        "rol": usuario.rol
-    }
-
-    if usuario.rol == "refugio" and usuario.refugio:
-        payload_token["refugio_id"] = usuario.refugio.id
-
-    token = create_access_token(payload_token)
+    token = _generar_token_usuario(usuario)
 
     return {
         "access_token": token,

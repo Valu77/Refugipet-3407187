@@ -69,7 +69,7 @@ def crear_contacto(
 )
 def obtener_contactos(
     db: Session = Depends(get_db),
-    admin = Depends(get_current_admin)
+    admin=Depends(get_current_admin)
 ):
 
     contactos = db.query(
@@ -94,7 +94,7 @@ def actualizar_contacto(
     contacto_id: int,
     datos: ContactoActualizar,
     db: Session = Depends(get_db),
-    admin = Depends(get_current_admin)
+    admin=Depends(get_current_admin)
 ):
 
     contacto = db.query(
@@ -137,7 +137,7 @@ def actualizar_contacto(
 def eliminar_contacto(
     contacto_id: int,
     db: Session = Depends(get_db),
-    admin = Depends(get_current_admin)
+    admin=Depends(get_current_admin)
 ):
     contacto = db.query(
         Contacto

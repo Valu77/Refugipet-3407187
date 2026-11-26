@@ -35,22 +35,7 @@ router = APIRouter(
 )
 
 
-@router.post(
-    "/",
-    response_model=AdopcionRespuesta,
-    status_code=status.HTTP_201_CREATED
-)
-def crear_adopcion(
-    datos: AdopcionCrear,
-    db: Session = Depends(get_db),
-    usuario: Usuario = Depends(get_current_user)
-):
-    mascota = db.query(
-        Mascota
-    ).filter(
-        Mascota.id == datos.mascota_id
-    ).first()
-
+def _validar_mascota_disponible(mascota, db):
     if not mascota or mascota.estado == "Retirada":
         raise HTTPException(
             status_code=404,
@@ -58,7 +43,10 @@ def crear_adopcion(
         )
 
     if mascota.refugio_id is not None:
-        refugio = db.query(Refugio).filter(Refugio.id == mascota.refugio_id).first()
+        refugio = db.query(Refugio).filter(
+            Refugio.id == mascota.refugio_id
+        ).first()
+
         if not refugio or refugio.estado != "aprobado":
             raise HTTPException(
                 status_code=400,
@@ -71,6 +59,8 @@ def crear_adopcion(
             detail="Esta mascota no está disponible"
         )
 
+
+def _validar_solicitud_existente(datos, usuario, db):
     solicitud_existente = db.query(Adopcion).filter(
         Adopcion.usuario_id == usuario.id,
         Adopcion.mascota_id == datos.mascota_id,
@@ -83,6 +73,28 @@ def crear_adopcion(
             detail="Ya tienes una solicitud pendiente para esta mascota"
         )
 
+
+def _limpiar_campo_opcional(valor):
+    return valor.strip() if valor else None
+
+
+@router.post(
+    "/",
+    response_model=AdopcionRespuesta,
+    status_code=status.HTTP_201_CREATED
+)
+def crear_adopcion(
+    datos: AdopcionCrear,
+    db: Session = Depends(get_db),
+    usuario: Usuario = Depends(get_current_user)
+):
+    mascota = db.query(Mascota).filter(
+        Mascota.id == datos.mascota_id
+    ).first()
+
+    _validar_mascota_disponible(mascota, db)
+    _validar_solicitud_existente(datos, usuario, db)
+
     adopcion = Adopcion(
         usuario_id=usuario.id,
         mascota_id=datos.mascota_id,
@@ -91,9 +103,11 @@ def crear_adopcion(
         vivienda=datos.vivienda.strip(),
         otras_mascotas=datos.otras_mascotas.strip(),
         motivo=datos.motivo.strip(),
-        experiencia_mascotas=datos.experiencia_mascotas.strip() if datos.experiencia_mascotas else None,
-        convivencia=datos.convivencia.strip() if datos.convivencia else None,
-        referencias=datos.referencias.strip() if datos.referencias else None,
+        experiencia_mascotas=_limpiar_campo_opcional(
+            datos.experiencia_mascotas
+        ),
+        convivencia=_limpiar_campo_opcional(datos.convivencia),
+        referencias=_limpiar_campo_opcional(datos.referencias),
         estado="Pendiente"
     )
 
@@ -104,20 +118,27 @@ def crear_adopcion(
     return adopcion
 
 
-def _enriquecer_adopcion(adopcion: Adopcion, solicitante: Usuario, mascota: Mascota) -> Adopcion:
-    adopcion.usuario_nombre = solicitante.nombre if solicitante else None
-    adopcion.usuario_correo = solicitante.correo if solicitante else None
-    adopcion.mascota_nombre = mascota.nombre if mascota else None
-    adopcion.mascota_tipo = mascota.tipo if mascota else None
-    adopcion.mascota_imagen = mascota.imagen if mascota else None
-    adopcion.mascota_edad = mascota.edad if mascota else None
-    adopcion.mascota_tamano = mascota.tamaño if mascota else None
-    adopcion.mascota_estado = mascota.estado if mascota else None
+def _enriquecer_adopcion(
+    adopcion: Adopcion,
+    solicitante: Usuario,
+    mascota: Mascota
+) -> Adopcion:
+    adopcion.usuario_nombre = getattr(solicitante, "nombre", None)
+    adopcion.usuario_correo = getattr(solicitante, "correo", None)
+
+    adopcion.mascota_nombre = getattr(mascota, "nombre", None)
+    adopcion.mascota_tipo = getattr(mascota, "tipo", None)
+    adopcion.mascota_imagen = getattr(mascota, "imagen", None)
+    adopcion.mascota_edad = getattr(mascota, "edad", None)
+    adopcion.mascota_tamano = getattr(mascota, "tamaño", None)
+    adopcion.mascota_estado = getattr(mascota, "estado", None)
+
     adopcion.refugio_nombre = (
         mascota.refugio.nombre_refugio
         if mascota and mascota.refugio
         else "RefugiPet (General)"
     )
+
     return adopcion
 
 
@@ -158,7 +179,10 @@ def obtener_adopciones(
         Adopcion.id.desc()
     ).all()
 
-    return [_enriquecer_adopcion(adopcion, solicitante, mascota) for adopcion, solicitante, mascota in filas]
+    return [
+        _enriquecer_adopcion(adopcion, solicitante, mascota)
+        for adopcion, solicitante, mascota in filas
+    ]
 
 
 @router.put(

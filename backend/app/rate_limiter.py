@@ -40,9 +40,11 @@ class LoginRateLimiter:
                     raise HTTPException(
                         status_code=status.HTTP_429_TOO_MANY_REQUESTS,
                         detail=(
-                            f"Demasiados intentos fallidos de inicio de sesión. "
-                            f"Por seguridad, el acceso a esta {tipo_entidad} está temporalmente bloqueado. "
-                            f"Por favor, inténtelo de nuevo en {remaining_minutes} minuto(s)."
+                            "Demasiados intentos fallidos de inicio de sesión. "
+                            f"Por seguridad, el acceso a esta {tipo_entidad} "
+                            "está temporalmente bloqueado. "
+                            f"Por favor, inténtelo de nuevo en "
+                            f"{remaining_minutes} minuto(s)."
                         ),
                         headers={"Retry-After": str(remaining_seconds)}
                     )

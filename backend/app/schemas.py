@@ -237,7 +237,6 @@ class AdopcionConSolicitanteRespuesta(BaseModel):
         from_attributes = True
 
 
-
 # ==========================================
 # ADOPCIONES
 # ==========================================

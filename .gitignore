@@ -7,3 +7,18 @@ __pycache__/
 node_modules/
 *.backup
 *.dump
+# Copias de seguridad
+app_respaldo_flake8/
+
+# Archivos de pruebas y cobertura generados
+.coverage
+.pytest_cache/
+htmlcov/
+
+# Archivos temporales de Python
+__pycache__/
+*.pyc
+venv/
+
+# Variables de entorno privadas
+.env

@@ -316,6 +316,7 @@ class Adopcion(Base):
 # CONTACTOS
 # ==========================================
 
+
 class Contacto(Base):
 
     __tablename__ = "contactos"

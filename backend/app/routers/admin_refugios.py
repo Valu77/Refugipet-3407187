@@ -33,7 +33,8 @@ router = APIRouter(
     response_model=List[RefugioRespuesta]
 )
 def listar_refugios(
-    estado: Optional[str] = Query(None, description="Filtrar por estado: pendiente, aprobado, rechazado, suspendido"),
+    estado: Optional[str] = Query(
+        None, description="Filtrar por estado: pendiente, aprobado, rechazado, suspendido"),
     db: Session = Depends(get_db),
     admin: Usuario = Depends(get_current_admin)
 ):
@@ -119,7 +120,10 @@ def rechazar_refugio(
     if not datos.motivo_rechazo or len(datos.motivo_rechazo.strip()) < 5:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Debe proporcionar una justificación clara de al menos 5 caracteres para rechazar la solicitud."
+            detail=(
+                            "Debe proporcionar una justificación clara de al menos "
+                            "5 caracteres para rechazar la solicitud."
+                            )
         )
 
     refugio.estado = "rechazado"
@@ -236,7 +240,11 @@ def obtener_mascotas_de_refugio(
     if refugio.estado != "aprobado":
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="No es posible consultar las mascotas porque el refugio no se encuentra aprobado."
+            detail=(
+                "Debe proporcionar una justificación clara de al menos "
+                "5 caracteres para rechazar la solicitud."
+                 )
+
         )
 
     mascotas = db.query(Mascota).filter(
