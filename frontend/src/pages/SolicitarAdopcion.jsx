@@ -8,6 +8,7 @@ function SolicitarAdopcion() {
   const { id } = useParams();
   const navigate = useNavigate();
 
+  const [mascotaInfo, setMascotaInfo] = useState(null);
   const [formulario, setFormulario] = useState({
     nombre: "",
     correo: "",
@@ -15,6 +16,9 @@ function SolicitarAdopcion() {
     ciudad: "",
     vivienda: "Casa",
     otrasMascotas: "No",
+    convivencia: "",
+    experienciaMascotas: "",
+    referencias: "",
     motivo: "",
   });
 
@@ -28,10 +32,17 @@ function SolicitarAdopcion() {
           correo: prev.correo || usuario.correo || "",
         }));
       }
-    } catch (_e) {
+    } catch {
       // ignorar
     }
-  }, []);
+
+    fetch(`http://127.0.0.1:8000/api/mascotas/${id}`)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data) setMascotaInfo(data);
+      })
+      .catch(() => {});
+  }, [id]);
 
   const [enviado, setEnviado] = useState(false);
   const [cargando, setCargando] = useState(false);
@@ -73,6 +84,9 @@ function SolicitarAdopcion() {
           ciudad: formulario.ciudad,
           vivienda: formulario.vivienda,
           otras_mascotas: formulario.otrasMascotas,
+          convivencia: formulario.convivencia || null,
+          experiencia_mascotas: formulario.experienciaMascotas || null,
+          referencias: formulario.referencias || null,
           motivo: formulario.motivo,
         }),
       });
@@ -115,6 +129,39 @@ function SolicitarAdopcion() {
         <section className="container solicitar-form-wrapper">
           {!enviado ? (
             <div className="solicitar-card">
+              {mascotaInfo && (
+                <div className="solicitar-pet-summary">
+                  {mascotaInfo.imagen ? (
+                    <img src={mascotaInfo.imagen} alt={mascotaInfo.nombre} />
+                  ) : (
+                    <div style={{ fontSize: "2.4rem" }}>
+                      {mascotaInfo.tipo === "Gato" ? "🐱" : "🐶"}
+                    </div>
+                  )}
+                  <div>
+                    <span
+                      style={{
+                        fontSize: "0.75rem",
+                        fontWeight: 700,
+                        textTransform: "uppercase",
+                        color: "var(--primary)",
+                      }}
+                    >
+                      Mascota seleccionada
+                    </span>
+                    <h3 style={{ margin: "2px 0", color: "var(--primary-dark)" }}>
+                      {mascotaInfo.nombre}
+                    </h3>
+                    <p style={{ margin: 0, fontSize: "0.88rem", color: "var(--text-muted)" }}>
+                      {mascotaInfo.tipo} · {mascotaInfo.edad}{" "}
+                      {mascotaInfo.edad === 1 ? "año" : "años"} ·{" "}
+                      {mascotaInfo.tamaño || mascotaInfo.tamano} ·{" "}
+                      {mascotaInfo.nombre_refugio || "RefugiPet"}
+                    </p>
+                  </div>
+                </div>
+              )}
+
               <form onSubmit={handleSubmit} className="solicitar-form">
                 {/* SECCIÓN 1: DATOS PERSONALES */}
                 <div className="form-section-header">
@@ -222,6 +269,44 @@ function SolicitarAdopcion() {
                   </div>
                 </div>
 
+                <div className="solicitar-grid-2">
+                  <div className="form-group">
+                    <label htmlFor="convivencia">Convivencia en el hogar</label>
+                    <input
+                      type="text"
+                      id="convivencia"
+                      name="convivencia"
+                      placeholder="Ej. Vivo con mi familia y dos niños"
+                      value={formulario.convivencia}
+                      onChange={handleChange}
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label htmlFor="experienciaMascotas">Experiencia con mascotas</label>
+                    <input
+                      type="text"
+                      id="experienciaMascotas"
+                      name="experienciaMascotas"
+                      placeholder="Ej. He tenido perros durante 5 años"
+                      value={formulario.experienciaMascotas}
+                      onChange={handleChange}
+                    />
+                  </div>
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="referencias">Referencias personales o de contacto</label>
+                  <input
+                    type="text"
+                    id="referencias"
+                    name="referencias"
+                    placeholder="Nombre y teléfono de una referencia o veterinario"
+                    value={formulario.referencias}
+                    onChange={handleChange}
+                  />
+                </div>
+
                 {/* SECCIÓN 3: MOTIVACIÓN */}
                 <div className="form-section-header margin-top">
                   <span className="section-step-num">3</span>
@@ -277,11 +362,11 @@ function SolicitarAdopcion() {
               </p>
 
               <div className="exito-buttons-group">
-                <Link to="/adopcion" className="btn-exito-primary">
-                  Explorar más mascotas
+                <Link to="/mis-solicitudes" className="btn-exito-primary">
+                  Ver mis solicitudes
                 </Link>
-                <Link to="/principal" className="btn-exito-secondary">
-                  Ir al inicio
+                <Link to="/adopcion" className="btn-exito-secondary">
+                  Explorar más mascotas
                 </Link>
               </div>
             </div>

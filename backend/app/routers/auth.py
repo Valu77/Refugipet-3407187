@@ -1,7 +1,12 @@
+import hashlib
+import secrets
+from datetime import datetime, timedelta, timezone
+
 from fastapi import (
     APIRouter,
     Depends,
     HTTPException,
+    Query,
     Request,
     status
 )
@@ -12,11 +17,15 @@ from sqlalchemy.exc import IntegrityError
 from typing import List
 
 from ..database import get_db
-from ..models import Usuario, Refugio
+from ..models import Usuario, Refugio, PasswordResetToken
 
 from ..schemas import (
     UsuarioRegistro,
     UsuarioRespuesta,
+    UsuarioActualizarPerfil,
+    UsuarioCambiarPassword,
+    OlvidePasswordSolicitud,
+    RestablecerPasswordSolicitud,
     RefugioRegistro,
     RefugioRespuesta,
     Login,
@@ -34,7 +43,14 @@ from ..dependencies import (
     get_current_admin
 )
 
-from ..rate_limiter import login_rate_limiter
+from ..rate_limiter import login_rate_limiter, password_reset_rate_limiter
+from ..email_service import (
+    enviar_correo_recuperacion,
+    obtener_frontend_url,
+    diagnosticar_smtp,
+    smtp_configurado
+)
+from ..services_notificaciones import notificar_admins
 
 
 router = APIRouter(
@@ -148,6 +164,19 @@ def registrar_refugio(
         )
 
         db.add(nuevo_refugio)
+        db.flush()
+
+        notificar_admins(
+            db=db,
+            titulo="Nuevo refugio pendiente de aprobación",
+            mensaje=(
+                f"El refugio '{nuevo_refugio.nombre_refugio}' ({nuevo_refugio.ciudad}) "
+                f"solicitó registro bajo la responsabilidad de {nuevo_refugio.nombre_responsable}."
+            ),
+            tipo="refugio_pendiente",
+            enlace="/admin"
+        )
+
         db.commit()
         db.refresh(nuevo_refugio)
 
@@ -338,6 +367,193 @@ def obtener_perfil_actual(
     return usuario
 
 
+@router.put(
+    "/perfil",
+    response_model=UsuarioRespuesta
+)
+def actualizar_perfil_usuario(
+    datos: UsuarioActualizarPerfil,
+    db: Session = Depends(get_db),
+    usuario: Usuario = Depends(get_current_user)
+):
+    usuario.nombre = datos.nombre.strip()
+    if usuario.rol == "refugio" and usuario.refugio:
+        usuario.refugio.nombre_responsable = usuario.nombre
+    db.commit()
+    db.refresh(usuario)
+    return usuario
+
+
+@router.put(
+    "/cambiar-password"
+)
+def cambiar_password_usuario(
+    datos: UsuarioCambiarPassword,
+    db: Session = Depends(get_db),
+    usuario: Usuario = Depends(get_current_user)
+):
+    if not verify_password(datos.password_actual, usuario.password):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="La contraseña actual es incorrecta."
+        )
+
+    usuario.password = hash_password(datos.nueva_password)
+    db.commit()
+
+    return {
+        "mensaje": "Contraseña actualizada exitosamente."
+    }
+
+
+# ==========================================
+# RECUPERACIÓN DE CONTRASEÑA
+# ==========================================
+
+def _hash_reset_token(token_plano: str) -> str:
+    return hashlib.sha256(token_plano.encode("utf-8")).hexdigest()
+
+
+def _obtener_token_valido(db: Session, token_plano: str) -> PasswordResetToken:
+    token_hash = _hash_reset_token(token_plano.strip())
+    registro = db.query(PasswordResetToken).filter(
+        PasswordResetToken.token_hash == token_hash
+    ).first()
+
+    if not registro or registro.usado:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="El enlace de recuperación es inválido o ya fue utilizado."
+        )
+
+    ahora = datetime.now(timezone.utc)
+    expira = registro.expira_en
+    if expira.tzinfo is None:
+        expira = expira.replace(tzinfo=timezone.utc)
+
+    if ahora >= expira:
+        registro.usado = True
+        db.commit()
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="El enlace de recuperación ha expirado. Por favor solicita uno nuevo."
+        )
+
+    return registro
+
+
+@router.post(
+    "/olvide-password"
+)
+def solicitar_recuperacion_password(
+    datos: OlvidePasswordSolicitud,
+    request: Request,
+    db: Session = Depends(get_db)
+):
+    correo_normalizado = datos.correo.strip().lower()
+    ip_cliente = request.client.host if request.client else "desconocida"
+
+    clave_ip = f"reset_ip:{ip_cliente}"
+    clave_correo = f"reset_email:{correo_normalizado}"
+
+    password_reset_rate_limiter.check_rate_limit(clave_ip, "dirección IP")
+    password_reset_rate_limiter.check_rate_limit(clave_correo, "cuenta")
+    password_reset_rate_limiter.record_failed_attempt(clave_ip)
+    password_reset_rate_limiter.record_failed_attempt(clave_correo)
+
+    usuario = db.query(Usuario).filter(
+        func.lower(Usuario.correo) == correo_normalizado
+    ).first()
+
+    if usuario:
+        # Invalidar tokens previos activos del usuario
+        db.query(PasswordResetToken).filter(
+            PasswordResetToken.usuario_id == usuario.id,
+            PasswordResetToken.usado == False  # noqa: E712
+        ).update({"usado": True})
+
+        token_plano = secrets.token_urlsafe(32)
+        token_hash = _hash_reset_token(token_plano)
+        expira_en = datetime.now(timezone.utc) + timedelta(minutes=30)
+
+        nuevo_token = PasswordResetToken(
+            usuario_id=usuario.id,
+            token_hash=token_hash,
+            expira_en=expira_en,
+            usado=False
+        )
+        db.add(nuevo_token)
+        db.commit()
+
+        enlace = f"{obtener_frontend_url()}/restablecer-password?token={token_plano}"
+        enviar_correo_recuperacion(
+            destinatario=usuario.correo,
+            nombre_usuario=usuario.nombre,
+            enlace_recuperacion=enlace
+        )
+    else:
+        # Trabajo de tiempo similar para evitar enumeración de usuarios
+        _hash_reset_token(secrets.token_urlsafe(32))
+
+    # Respuesta siempre neutra sin revelar si el correo existe
+    return {
+        "mensaje": (
+            "Si el correo electrónico se encuentra registrado en RefugiPet, "
+            "enviaremos un enlace seguro para restablecer tu contraseña (válido por 30 minutos)."
+        )
+    }
+
+
+@router.get(
+    "/validar-token-reset"
+)
+def validar_token_recuperacion(
+    token: str = Query(..., min_length=16, max_length=256),
+    db: Session = Depends(get_db)
+):
+    _obtener_token_valido(db, token)
+    return {"valido": True}
+
+
+@router.post(
+    "/restablecer-password"
+)
+def restablecer_password(
+    datos: RestablecerPasswordSolicitud,
+    request: Request,
+    db: Session = Depends(get_db)
+):
+    ip_cliente = request.client.host if request.client else "desconocida"
+    clave_ip = f"reset_confirm_ip:{ip_cliente}"
+    password_reset_rate_limiter.check_rate_limit(clave_ip, "dirección IP")
+
+    registro = _obtener_token_valido(db, datos.token)
+
+    usuario = db.query(Usuario).filter(
+        Usuario.id == registro.usuario_id
+    ).first()
+
+    if not usuario:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Usuario no encontrado"
+        )
+
+    usuario.password = hash_password(datos.nueva_password)
+    # Invalidar este token y cualquier otro pendiente del usuario (un solo uso)
+    db.query(PasswordResetToken).filter(
+        PasswordResetToken.usuario_id == usuario.id,
+        PasswordResetToken.usado == False  # noqa: E712
+    ).update({"usado": True})
+
+    db.commit()
+    password_reset_rate_limiter.reset_attempts(clave_ip)
+
+    return {
+        "mensaje": "Contraseña restablecida correctamente. Ya puedes iniciar sesión con tu nueva contraseña."
+    }
+
+
 # ==========================================
 # LISTAR USUARIOS (SOLO ADMINISTRADOR)
 # ==========================================
@@ -351,3 +567,21 @@ def listar_usuarios(
     admin: Usuario = Depends(get_current_admin)
 ):
     return db.query(Usuario).order_by(Usuario.id.asc()).all()
+
+
+# ==========================================
+# DIAGNÓSTICO SMTP (solo admin — no expone credenciales)
+# ==========================================
+
+@router.get(
+    "/smtp-status"
+)
+def estado_smtp(
+    admin: Usuario = Depends(get_current_admin)
+):
+    """
+    Devuelve el estado de configuración SMTP sin revelar las credenciales reales.
+    Solo accesible por el administrador. Útil para verificar si el envío de
+    correos está activo antes de la presentación.
+    """
+    return diagnosticar_smtp()

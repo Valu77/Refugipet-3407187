@@ -97,3 +97,10 @@ login_rate_limiter = LoginRateLimiter(
     lockout_duration_seconds=300,
     window_duration_seconds=300
 )
+
+# Control de tasa para solicitudes de recuperación de contraseña (máx 5 en 15 min)
+password_reset_rate_limiter = LoginRateLimiter(
+    max_attempts=5,
+    lockout_duration_seconds=900,
+    window_duration_seconds=900
+)

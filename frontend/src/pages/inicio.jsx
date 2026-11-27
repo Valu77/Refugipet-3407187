@@ -63,7 +63,7 @@ function Inicio() {
         correo: "",
         mensaje: "",
       });
-    } catch (_err) {
+    } catch {
       setErrorContacto("No se pudo conectar con el servidor.");
     } finally {
       setEnviando(false);

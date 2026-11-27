@@ -16,7 +16,9 @@ from .routers import (
     adopciones,
     contactos,
     refugio,
-    admin_refugios
+    admin_refugios,
+    favoritos,
+    notificaciones
 )
 
 
@@ -118,5 +120,15 @@ app.include_router(
 
 app.include_router(
     admin_refugios.router,
+    prefix="/api"
+)
+
+app.include_router(
+    favoritos.router,
+    prefix="/api"
+)
+
+app.include_router(
+    notificaciones.router,
     prefix="/api"
 )

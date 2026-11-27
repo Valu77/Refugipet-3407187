@@ -1,5 +1,6 @@
 import React from "react";
 import { Navigate } from "react-router-dom";
+import { obtenerUsuarioLocal } from "../services/api";
 
 /**
  * Componente para proteger rutas privadas y administrativas.
@@ -8,13 +9,7 @@ import { Navigate } from "react-router-dom";
  */
 function RutaProtegida({ children, soloAdmin = false, soloRefugio = false }) {
   const token = localStorage.getItem("token");
-  let usuario = null;
-
-  try {
-    usuario = JSON.parse(localStorage.getItem("usuario") || "null");
-  } catch (_e) {
-    usuario = null;
-  }
+  const usuario = obtenerUsuarioLocal();
 
   // Si no hay token ni usuario autenticado, redirigir al login
   if (!token || !usuario) {

@@ -1,10 +1,12 @@
 from sqlalchemy import (
+    Boolean,
     Column,
     Integer,
     String,
     Text,
     DateTime,
-    ForeignKey
+    ForeignKey,
+    UniqueConstraint
 )
 
 from sqlalchemy.orm import relationship
@@ -349,6 +351,145 @@ class Contacto(Base):
     )
 
     fecha = Column(
+        DateTime(timezone=True),
+        server_default=func.now()
+    )
+
+
+# ==========================================
+# TOKENS DE RECUPERACIÓN DE CONTRASEÑA
+# ==========================================
+
+class PasswordResetToken(Base):
+
+    __tablename__ = "password_reset_tokens"
+
+    id = Column(
+        Integer,
+        primary_key=True,
+        index=True
+    )
+
+    usuario_id = Column(
+        Integer,
+        ForeignKey("usuarios.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True
+    )
+
+    token_hash = Column(
+        String(128),
+        unique=True,
+        nullable=False,
+        index=True
+    )
+
+    expira_en = Column(
+        DateTime(timezone=True),
+        nullable=False
+    )
+
+    usado = Column(
+        Boolean,
+        default=False,
+        nullable=False
+    )
+
+    creado_en = Column(
+        DateTime(timezone=True),
+        server_default=func.now()
+    )
+
+
+# ==========================================
+# FAVORITOS
+# ==========================================
+
+class Favorito(Base):
+
+    __tablename__ = "favoritos"
+    __table_args__ = (
+        UniqueConstraint("usuario_id", "mascota_id", name="uq_favoritos_usuario_mascota"),
+    )
+
+    id = Column(
+        Integer,
+        primary_key=True,
+        index=True
+    )
+
+    usuario_id = Column(
+        Integer,
+        ForeignKey("usuarios.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True
+    )
+
+    mascota_id = Column(
+        Integer,
+        ForeignKey("mascotas.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True
+    )
+
+    creado_en = Column(
+        DateTime(timezone=True),
+        server_default=func.now()
+    )
+
+    mascota = relationship("Mascota")
+
+
+# ==========================================
+# NOTIFICACIONES INTERNAS
+# ==========================================
+
+class Notificacion(Base):
+
+    __tablename__ = "notificaciones"
+
+    id = Column(
+        Integer,
+        primary_key=True,
+        index=True
+    )
+
+    usuario_id = Column(
+        Integer,
+        ForeignKey("usuarios.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True
+    )
+
+    titulo = Column(
+        String(150),
+        nullable=False
+    )
+
+    mensaje = Column(
+        Text,
+        nullable=False
+    )
+
+    tipo = Column(
+        String(40),
+        default="info",
+        nullable=False
+    )
+
+    leida = Column(
+        Boolean,
+        default=False,
+        nullable=False,
+        index=True
+    )
+
+    enlace = Column(
+        String(200),
+        nullable=True
+    )
+
+    creado_en = Column(
         DateTime(timezone=True),
         server_default=func.now()
     )

@@ -1,9 +1,9 @@
 import { useState, useEffect, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import logo from "../../assets/logo.png";
+import NotificacionesCampana from "../../components/NotificacionesCampana";
+import { API_URL } from "../../services/api";
 import "../../refugio.css";
-
-const API_URL = "http://127.0.0.1:8000/api";
 
 function estadoBadgeClass(estado) {
   const e = (estado || "").toLowerCase();
@@ -25,6 +25,8 @@ function PanelRefugio() {
     total_mascotas: 0,
     mascotas_disponibles: 0,
     mascotas_adoptadas: 0,
+    total_perros: 0,
+    total_gatos: 0,
     solicitudes_pendientes: 0,
     solicitudes_totales: 0,
   });
@@ -169,6 +171,17 @@ function PanelRefugio() {
 
     cargarTodo();
   }, [navigate, cargarTodo]);
+
+  useEffect(() => {
+    const onKeyDown = (e) => {
+      if (e.key === "Escape") {
+        if (solicitudActiva && !procesandoSol) setSolicitudActiva(null);
+        if (mascotaARetirar && !retirandoMascota) setMascotaARetirar(null);
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [solicitudActiva, procesandoSol, mascotaARetirar, retirandoMascota]);
 
   // ================= MASCOTAS =================
   const limpiarFormMascota = () => {
@@ -509,9 +522,12 @@ function PanelRefugio() {
             </p>
           </div>
 
-          <div className="panel-user-chip">
-            <span className="panel-status-dot"></span>
-            <span>{perfil.nombre_responsable || "Refugio Aprobado"}</span>
+          <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+            <NotificacionesCampana compact />
+            <div className="panel-user-chip">
+              <span className="panel-status-dot"></span>
+              <span>{perfil.nombre_responsable || "Refugio Aprobado"}</span>
+            </div>
           </div>
         </header>
 
@@ -537,7 +553,7 @@ function PanelRefugio() {
                 <div className="panel-stats-grid">
                   <div className="panel-stat-card">
                     <h3>{dashboard.total_mascotas}</h3>
-                    <p>Mascotas registradas</p>
+                    <p>Mascotas ({dashboard.total_perros} perros · {dashboard.total_gatos} gatos)</p>
                   </div>
                   <div className="panel-stat-card success">
                     <h3>{dashboard.mascotas_disponibles}</h3>

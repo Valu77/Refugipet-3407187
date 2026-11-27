@@ -59,6 +59,61 @@ class Login(BaseModel):
         return str(v).strip().lower()
 
 
+class UsuarioActualizarPerfil(BaseModel):
+
+    nombre: str = Field(..., min_length=2, max_length=100)
+
+
+class UsuarioCambiarPassword(BaseModel):
+
+    password_actual: str
+    nueva_password: str = Field(..., min_length=12, max_length=128)
+    confirmar_nueva_password: str = Field(..., min_length=12, max_length=128)
+
+    @field_validator("nueva_password")
+    @classmethod
+    def validar_password_segura(cls, v: str) -> str:
+        if len(v) < 12:
+            raise ValueError("La nueva contraseña debe tener como mínimo 12 caracteres.")
+        return v
+
+    @model_validator(mode="after")
+    def verificar_confirmacion_password(self):
+        if self.nueva_password != self.confirmar_nueva_password:
+            raise ValueError("Las nuevas contraseñas no coinciden.")
+        return self
+
+
+class OlvidePasswordSolicitud(BaseModel):
+
+    correo: EmailStr
+
+    @field_validator("correo")
+    @classmethod
+    def normalizar_correo(cls, v: EmailStr) -> str:
+        return str(v).strip().lower()
+
+
+class RestablecerPasswordSolicitud(BaseModel):
+
+    token: str = Field(..., min_length=16, max_length=256)
+    nueva_password: str = Field(..., min_length=12, max_length=128)
+    confirmar_nueva_password: str = Field(..., min_length=12, max_length=128)
+
+    @field_validator("nueva_password")
+    @classmethod
+    def validar_password_segura(cls, v: str) -> str:
+        if len(v) < 12:
+            raise ValueError("La nueva contraseña debe tener como mínimo 12 caracteres.")
+        return v
+
+    @model_validator(mode="after")
+    def verificar_confirmacion_password(self):
+        if self.nueva_password != self.confirmar_nueva_password:
+            raise ValueError("Las contraseñas no coinciden.")
+        return self
+
+
 class Token(BaseModel):
 
     access_token: str
@@ -206,6 +261,8 @@ class DashboardRefugioRespuesta(BaseModel):
     total_mascotas: int
     mascotas_disponibles: int
     mascotas_adoptadas: int
+    total_perros: int = 0
+    total_gatos: int = 0
     solicitudes_pendientes: int
     solicitudes_totales: int
 
@@ -321,3 +378,28 @@ class ContactoRespuesta(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+# ==========================================
+# NOTIFICACIONES
+# ==========================================
+
+class NotificacionRespuesta(BaseModel):
+
+    id: int
+    usuario_id: int
+    titulo: str
+    mensaje: str
+    tipo: str
+    leida: bool
+    enlace: Optional[str] = None
+    creado_en: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class NotificacionListaRespuesta(BaseModel):
+
+    no_leidas: int
+    items: list[NotificacionRespuesta]

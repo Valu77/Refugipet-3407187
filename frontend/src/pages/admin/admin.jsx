@@ -2,8 +2,8 @@ import "../../admin.css";
 import { useState, useEffect, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import logo from "../../assets/logo.png";
-
-const API_URL = "http://127.0.0.1:8000/api";
+import NotificacionesCampana from "../../components/NotificacionesCampana";
+import { API_URL } from "../../services/api";
 
 function claseEstado(estado) {
   const e = (estado || "").toLowerCase();
@@ -35,6 +35,8 @@ function Admin() {
     total_mascotas: 0,
     mascotas_disponibles: 0,
     mascotas_adoptadas: 0,
+    total_perros: 0,
+    total_gatos: 0,
     total_adopciones: 0,
     adopciones_pendientes: 0,
     contactos_no_leidos: 0,
@@ -51,6 +53,8 @@ function Admin() {
   const [archivoImagen, setArchivoImagen] = useState(null);
   const [previewImagen, setPreviewImagen] = useState("");
   const [editandoId, setEditandoId] = useState(null);
+  const [tipoLegacyMascota, setTipoLegacyMascota] = useState(null);
+  const [mascotaAEliminar, setMascotaAEliminar] = useState(null);
   const [nuevaMascota, setNuevaMascota] = useState({
     nombre: "",
     tipo: "Perro",
@@ -66,15 +70,26 @@ function Admin() {
   const [refugios, setRefugios] = useState([]);
   const [cargandoRefugios, setCargandoRefugios] = useState(false);
   const [filtroRefugio, setFiltroRefugio] = useState("todos");
-  const [refugioRechazando, setRefugioRechazando] = useState(null);
-  const [motivoRechazo, setMotivoRechazo] = useState("");
+  const [busquedaRefugio, setBusquedaRefugio] = useState("");
+  const [refugioDetalle, setRefugioDetalle] = useState(null);
   const [refugioSupervisado, setRefugioSupervisado] = useState(null);
   const [mascotasRefugio, setMascotasRefugio] = useState([]);
+  const [cargandoMascotasRefugio, setCargandoMascotasRefugio] = useState(false);
+
+  // Modal de confirmación/motivo para acciones sobre refugios
+  const [modalAccionRefugio, setModalAccionRefugio] = useState(null); // { tipo: 'aprobar'|'rechazar'|'suspender'|'reactivar', refugio }
+  const [motivoAccionRefugio, setMotivoAccionRefugio] = useState("");
+  const [errorModalRefugio, setErrorModalRefugio] = useState("");
+  const [procesandoRefugio, setProcesandoRefugio] = useState(false);
 
   // ================= ADOPCIONES =================
   const [adopciones, setAdopciones] = useState([]);
   const [cargandoAdopciones, setCargandoAdopciones] = useState(false);
   const [filtroAdopcion, setFiltroAdopcion] = useState("Todas");
+  const [adopcionDetalle, setAdopcionDetalle] = useState(null);
+  const [accionAdopcion, setAccionAdopcion] = useState(null); // 'aprobar' | 'rechazar'
+  const [motivoRechazoAdop, setMotivoRechazoAdop] = useState("");
+  const [procesandoAdop, setProcesandoAdop] = useState(false);
 
   // ================= MENSAJES =================
   const [mensajes, setMensajes] = useState([]);
@@ -98,9 +113,9 @@ function Admin() {
         },
       });
 
-      if (respuesta.status === 401 || respuesta.status === 403) {
+      if (respuesta.status === 401) {
         cerrarSesion();
-        throw new Error("Sesión no autorizada.");
+        throw new Error("Tu sesión ha expirado.");
       }
 
       const datos = await respuesta.json().catch(() => ({}));
@@ -194,7 +209,7 @@ function Admin() {
     let usuario = null;
     try {
       usuario = JSON.parse(localStorage.getItem("usuario") || "null");
-    } catch (_e) {
+    } catch {
       usuario = null;
     }
 
@@ -217,6 +232,27 @@ function Admin() {
     cargarRefugios,
     cargarAdopciones,
     cargarMensajes,
+  ]);
+
+  useEffect(() => {
+    const onKeyDown = (e) => {
+      if (e.key !== "Escape") return;
+      if (refugioDetalle) setRefugioDetalle(null);
+      if (refugioSupervisado) setRefugioSupervisado(null);
+      if (modalAccionRefugio && !procesandoRefugio) setModalAccionRefugio(null);
+      if (adopcionDetalle && !procesandoAdop) setAdopcionDetalle(null);
+      if (mascotaAEliminar) setMascotaAEliminar(null);
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [
+    refugioDetalle,
+    refugioSupervisado,
+    modalAccionRefugio,
+    procesandoRefugio,
+    adopcionDetalle,
+    procesandoAdop,
+    mascotaAEliminar,
   ]);
 
   // ================= MASCOTAS FORM =================
@@ -243,6 +279,7 @@ function Admin() {
     setArchivoImagen(null);
     setPreviewImagen("");
     setEditandoId(null);
+    setTipoLegacyMascota(null);
     setErrorFormulario("");
   };
 
@@ -254,9 +291,13 @@ function Admin() {
   const abrirFormularioEditar = (mascota) => {
     setEditandoId(mascota.id);
     const tam = mascota["tamaño"] || mascota.tamano || "Mediano";
+    const tipoActual = mascota.tipo || "Perro";
+    setTipoLegacyMascota(
+      tipoActual !== "Perro" && tipoActual !== "Gato" ? tipoActual : null
+    );
     setNuevaMascota({
       nombre: mascota.nombre,
-      tipo: mascota.tipo,
+      tipo: tipoActual,
       edad: String(mascota.edad),
       tamano: tam.toLowerCase() === "pequeno" ? "Pequeño" : tam,
       descripcion: mascota.descripcion || "",
@@ -329,12 +370,15 @@ function Admin() {
     }
   };
 
-  const eliminarMascota = async (id) => {
-    if (!window.confirm("¿Seguro que quieres eliminar o retirar esta mascota?")) return;
+  const confirmarEliminarMascota = async () => {
+    if (!mascotaAEliminar) return;
     setErrorGlobal("");
     setMensajeGlobal("");
     try {
-      const resp = await fetchAdmin(`/mascotas/${id}`, { method: "DELETE" });
+      const resp = await fetchAdmin(`/mascotas/${mascotaAEliminar.id}`, {
+        method: "DELETE",
+      });
+      setMascotaAEliminar(null);
       setMensajeGlobal(resp.mensaje || "Mascota actualizada.");
       await Promise.all([cargarMascotas(), cargarEstadisticas()]);
     } catch (err) {
@@ -343,101 +387,128 @@ function Admin() {
   };
 
   // ================= GESTIÓN DE REFUGIOS =================
-  const aprobarRefugio = async (refugio) => {
-    if (!window.confirm(`¿Aprobar al refugio "${refugio.nombre_refugio}"?`)) return;
-    setErrorGlobal("");
-    setMensajeGlobal("");
-    try {
-      await fetchAdmin(`/admin/refugios/${refugio.id}/aprobar`, { method: "PUT" });
-      setMensajeGlobal(`Refugio "${refugio.nombre_refugio}" aprobado.`);
-      await Promise.all([cargarRefugios(filtroRefugio), cargarEstadisticas()]);
-    } catch (err) {
-      setErrorGlobal(err.message);
-    }
+  const abrirAccionRefugio = (tipo, refugio) => {
+    setModalAccionRefugio({ tipo, refugio });
+    setMotivoAccionRefugio("");
+    setErrorModalRefugio("");
   };
 
-  const confirmarRechazoRefugio = async (e) => {
-    e.preventDefault();
-    if (!refugioRechazando) return;
-    if (motivoRechazo.trim().length < 5) {
-      setErrorGlobal("El motivo de rechazo debe tener al menos 5 caracteres.");
+  const ejecutarAccionRefugio = async (e) => {
+    if (e) e.preventDefault();
+    if (!modalAccionRefugio) return;
+
+    const { tipo, refugio } = modalAccionRefugio;
+
+    if ((tipo === "rechazar" || tipo === "suspender") && motivoAccionRefugio.trim().length < 5) {
+      setErrorModalRefugio("Debes escribir un motivo de al menos 5 caracteres.");
       return;
     }
+
+    setProcesandoRefugio(true);
+    setErrorModalRefugio("");
     setErrorGlobal("");
     setMensajeGlobal("");
+
     try {
-      await fetchAdmin(`/admin/refugios/${refugioRechazando.id}/rechazar`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
+      let endpoint = `/admin/refugios/${refugio.id}/${tipo}`;
+      let fetchOpts = { method: "PUT" };
+
+      if (tipo === "rechazar") {
+        fetchOpts.headers = { "Content-Type": "application/json" };
+        fetchOpts.body = JSON.stringify({
           estado: "rechazado",
-          motivo_rechazo: motivoRechazo.trim(),
-        }),
-      });
-      setMensajeGlobal(`Refugio "${refugioRechazando.nombre_refugio}" rechazado.`);
-      setRefugioRechazando(null);
-      setMotivoRechazo("");
-      await Promise.all([cargarRefugios(filtroRefugio), cargarEstadisticas()]);
-    } catch (err) {
-      setErrorGlobal(err.message);
-    }
-  };
+          motivo_rechazo: motivoAccionRefugio.trim(),
+        });
+      } else if (tipo === "suspender") {
+        fetchOpts.headers = { "Content-Type": "application/json" };
+        fetchOpts.body = JSON.stringify({
+          estado: "suspendido",
+          motivo_suspension: motivoAccionRefugio.trim(),
+        });
+      }
 
-  const suspenderRefugio = async (refugio) => {
-    if (!window.confirm(`¿Suspender temporalmente al refugio "${refugio.nombre_refugio}"?`)) {
-      return;
-    }
-    setErrorGlobal("");
-    setMensajeGlobal("");
-    try {
-      await fetchAdmin(`/admin/refugios/${refugio.id}/suspender`, { method: "PUT" });
-      setMensajeGlobal(`Refugio "${refugio.nombre_refugio}" suspendido.`);
-      await Promise.all([cargarRefugios(filtroRefugio), cargarEstadisticas()]);
-    } catch (err) {
-      setErrorGlobal(err.message);
-    }
-  };
+      const actualizado = await fetchAdmin(endpoint, fetchOpts);
 
-  const reactivarRefugio = async (refugio) => {
-    if (!window.confirm(`¿Reactivar al refugio "${refugio.nombre_refugio}"?`)) return;
-    setErrorGlobal("");
-    setMensajeGlobal("");
-    try {
-      await fetchAdmin(`/admin/refugios/${refugio.id}/reactivar`, { method: "PUT" });
-      setMensajeGlobal(`Refugio "${refugio.nombre_refugio}" reactivado.`);
-      await Promise.all([cargarRefugios(filtroRefugio), cargarEstadisticas()]);
+      const textos = {
+        aprobar: `Refugio "${refugio.nombre_refugio}" aprobado correctamente.`,
+        rechazar: `Solicitud de "${refugio.nombre_refugio}" rechazada.`,
+        suspender: `Refugio "${refugio.nombre_refugio}" suspendido correctamente.`,
+        reactivar: `Refugio "${refugio.nombre_refugio}" reactivado correctamente.`,
+      };
+      setMensajeGlobal(textos[tipo]);
+      setModalAccionRefugio(null);
+      setMotivoAccionRefugio("");
+      if (refugioDetalle && refugioDetalle.id === refugio.id) {
+        setRefugioDetalle(actualizado);
+      }
+
+      await Promise.all([
+        cargarRefugios(filtroRefugio),
+        cargarMascotas(),
+        cargarEstadisticas(),
+      ]);
     } catch (err) {
-      setErrorGlobal(err.message);
+      setErrorModalRefugio(err.message);
+    } finally {
+      setProcesandoRefugio(false);
     }
   };
 
   const verMascotasDeRefugio = async (refugio) => {
+    if (refugio.estado !== "aprobado") {
+      setErrorGlobal("Solo se pueden consultar las mascotas de refugios aprobados.");
+      return;
+    }
     setErrorGlobal("");
+    setRefugioSupervisado(refugio);
+    setCargandoMascotasRefugio(true);
     try {
       const lista = await fetchAdmin(`/admin/refugios/${refugio.id}/mascotas`);
-      setRefugioSupervisado(refugio);
       setMascotasRefugio(lista);
     } catch (err) {
       setErrorGlobal(err.message);
+      setRefugioSupervisado(null);
+    } finally {
+      setCargandoMascotasRefugio(false);
     }
   };
 
   // ================= GESTIÓN DE ADOPCIONES =================
-  const responderAdopcion = async (adopcionId, nuevoEstado) => {
-    const verbo = nuevoEstado === "Aprobada" ? "aprobar" : "rechazar";
-    if (!window.confirm(`¿Confirmas ${verbo} esta solicitud de adopción?`)) return;
+  const abrirDetalleAdopcion = (adop) => {
+    setAdopcionDetalle(adop);
+    setAccionAdopcion(null);
+    setMotivoRechazoAdop("");
+  };
+
+  const confirmarRespuestaAdopcion = async () => {
+    if (!adopcionDetalle || !accionAdopcion) return;
+    const nuevoEstado = accionAdopcion === "aprobar" ? "Aprobada" : "Rechazada";
+    if (nuevoEstado === "Rechazada" && motivoRechazoAdop.trim().length < 5) {
+      setErrorGlobal("Escribe un motivo de al menos 5 caracteres para rechazar la solicitud.");
+      return;
+    }
+
+    setProcesandoAdop(true);
     setErrorGlobal("");
     setMensajeGlobal("");
     try {
-      await fetchAdmin(`/adopciones/${adopcionId}`, {
+      await fetchAdmin(`/adopciones/${adopcionDetalle.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ estado: nuevoEstado }),
+        body: JSON.stringify({
+          estado: nuevoEstado,
+          motivo_rechazo:
+            nuevoEstado === "Rechazada" ? motivoRechazoAdop.trim() : null,
+        }),
       });
-      setMensajeGlobal(`Solicitud #${adopcionId} marcada como "${nuevoEstado}".`);
+      setMensajeGlobal(`Solicitud #${adopcionDetalle.id} marcada como "${nuevoEstado}".`);
+      setAdopcionDetalle(null);
+      setAccionAdopcion(null);
       await Promise.all([cargarAdopciones(), cargarMascotas(), cargarEstadisticas()]);
     } catch (err) {
       setErrorGlobal(err.message);
+    } finally {
+      setProcesandoAdop(false);
     }
   };
 
@@ -469,6 +540,17 @@ function Admin() {
       setErrorGlobal(err.message);
     }
   };
+
+  const refugiosFiltrados = refugios.filter((r) => {
+    const q = busquedaRefugio.trim().toLowerCase();
+    if (!q) return true;
+    return (
+      (r.nombre_refugio || "").toLowerCase().includes(q) ||
+      (r.nombre_responsable || "").toLowerCase().includes(q) ||
+      (r.ciudad || "").toLowerCase().includes(q) ||
+      (r.correo || "").toLowerCase().includes(q)
+    );
+  });
 
   const adopcionesFiltradas = adopciones.filter((a) =>
     filtroAdopcion === "Todas" ? true : a.estado === filtroAdopcion
@@ -567,10 +649,13 @@ function Admin() {
         <header className="admin-header">
           <div>
             <h1>Panel de Administración</h1>
-            <p>Gestiona refugios, mascotas, usuarios, adopciones y mensajes de RefugiPet</p>
+            <p>Supervisa refugios por estado, mascotas, usuarios, adopciones y mensajes</p>
           </div>
 
-          <div className="admin-user">Administrador</div>
+          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+            <NotificacionesCampana compact />
+            <div className="admin-user">Administrador</div>
+          </div>
         </header>
 
         {errorGlobal && <div className="admin-alerta-error">⚠️ {errorGlobal}</div>}
@@ -582,19 +667,21 @@ function Admin() {
             <div className="admin-bienvenida">
               <h2>Bienvenido al panel de RefugiPet</h2>
               <p>
-                Supervisa toda la plataforma: aprueba nuevos refugios, administra mascotas generales, revisa adopciones y atiende mensajes de contacto.
+                Revisa solicitudes de nuevos refugios, aprueba o suspende organizaciones con trazabilidad, supervisa mascotas y gestiona solicitudes generales.
               </p>
             </div>
 
             <div className="admin-estadisticas">
               <div className="estadistica-card">
                 <h3>{estadisticas.total_refugios}</h3>
-                <p>Refugios registrados ({estadisticas.refugios_pendientes} pendientes)</p>
+                <p>Refugios ({estadisticas.refugios_pendientes} pendientes)</p>
               </div>
 
               <div className="estadistica-card">
                 <h3>{estadisticas.total_mascotas}</h3>
-                <p>Mascotas activas ({estadisticas.mascotas_disponibles} disponibles)</p>
+                <p>
+                  Mascotas ({estadisticas.total_perros} perros · {estadisticas.total_gatos} gatos)
+                </p>
               </div>
 
               <div className="estadistica-card">
@@ -604,7 +691,7 @@ function Admin() {
 
               <div className="estadistica-card">
                 <h3>{estadisticas.total_adopciones}</h3>
-                <p>Solicitudes de adopción ({estadisticas.adopciones_pendientes} pendientes)</p>
+                <p>Adopciones ({estadisticas.adopciones_pendientes} pendientes)</p>
               </div>
 
               <div className="estadistica-card">
@@ -658,54 +745,38 @@ function Admin() {
           <section className="admin-tabla-seccion">
             <div className="admin-seccion-titulo">
               <div>
-                <h2>Gestión de Refugios</h2>
-                <p>Aprueba, rechaza, suspende o supervisa los refugios registrados.</p>
+                <h2>Gestión Profesional de Refugios</h2>
+                <p>
+                  Consulta la ficha de cada refugio y ejecuta únicamente las acciones válidas para su estado actual.
+                </p>
               </div>
             </div>
 
-            <div className="admin-filtros">
-              {["todos", "pendiente", "aprobado", "rechazado", "suspendido"].map((est) => (
-                <button
-                  key={est}
-                  type="button"
-                  className={`admin-filtro-btn ${filtroRefugio === est ? "activo" : ""}`}
-                  onClick={() => {
-                    setFiltroRefugio(est);
-                    cargarRefugios(est);
-                  }}
-                >
-                  {est.charAt(0).toUpperCase() + est.slice(1)}
-                </button>
-              ))}
-            </div>
-
-            {refugioRechazando && (
-              <form className="admin-rechazo-box" onSubmit={confirmarRechazoRefugio}>
-                <h3>Rechazar solicitud de "{refugioRechazando.nombre_refugio}"</h3>
-                <textarea
-                  rows="3"
-                  placeholder="Escribe el motivo del rechazo (mínimo 5 caracteres)..."
-                  value={motivoRechazo}
-                  onChange={(e) => setMotivoRechazo(e.target.value)}
-                  required
-                  minLength={5}
-                />
-                <div className="acciones">
-                  <button type="submit" className="eliminar">
-                    Confirmar rechazo
-                  </button>
+            <div className="admin-toolbar">
+              <div className="admin-filtros" style={{ marginBottom: 0 }}>
+                {["todos", "pendiente", "aprobado", "rechazado", "suspendido"].map((est) => (
                   <button
+                    key={est}
                     type="button"
+                    className={`admin-filtro-btn ${filtroRefugio === est ? "activo" : ""}`}
                     onClick={() => {
-                      setRefugioRechazando(null);
-                      setMotivoRechazo("");
+                      setFiltroRefugio(est);
+                      cargarRefugios(est);
                     }}
                   >
-                    Cancelar
+                    {est.charAt(0).toUpperCase() + est.slice(1)}
                   </button>
-                </div>
-              </form>
-            )}
+                ))}
+              </div>
+
+              <input
+                type="search"
+                className="admin-search-input"
+                placeholder="Buscar por refugio, responsable, ciudad o correo..."
+                value={busquedaRefugio}
+                onChange={(e) => setBusquedaRefugio(e.target.value)}
+              />
+            </div>
 
             {cargandoRefugios ? (
               <p>Cargando refugios...</p>
@@ -714,151 +785,117 @@ function Admin() {
                 <table>
                   <thead>
                     <tr>
-                      <th>ID</th>
                       <th>Refugio</th>
                       <th>Responsable</th>
-                      <th>Correo / Teléfono</th>
-                      <th>Ubicación</th>
+                      <th>Contacto y Ciudad</th>
                       <th>Mascotas</th>
                       <th>Estado</th>
                       <th>Acciones</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {refugios.map((r) => (
+                    {refugiosFiltrados.map((r) => (
                       <tr key={r.id}>
-                        <td>{r.id}</td>
                         <td>
                           <strong>{r.nombre_refugio}</strong>
-                          {r.motivo_rechazo && (
-                            <div style={{ fontSize: "12px", color: "#b91c1c", marginTop: "4px" }}>
-                              Motivo: {r.motivo_rechazo}
+                          <div style={{ fontSize: "12px", color: "#6b7280" }}>
+                            ID #{r.id}
+                          </div>
+                          {r.estado === "rechazado" && r.motivo_rechazo && (
+                            <div className="admin-motivo-chip">
+                              Rechazo: {r.motivo_rechazo}
+                            </div>
+                          )}
+                          {r.estado === "suspendido" && r.motivo_suspension && (
+                            <div className="admin-motivo-chip">
+                              Suspensión: {r.motivo_suspension}
                             </div>
                           )}
                         </td>
                         <td>{r.nombre_responsable}</td>
                         <td>
                           <div>{r.correo}</div>
-                          <div style={{ fontSize: "12px", color: "#777" }}>{r.telefono}</div>
+                          <div style={{ fontSize: "12px", color: "#6b7280" }}>
+                            {r.telefono} · {r.ciudad}
+                          </div>
                         </td>
                         <td>
-                          <div>{r.ciudad}</div>
-                          <div style={{ fontSize: "12px", color: "#777" }}>{r.direccion}</div>
+                          {r.estado === "aprobado" ? (
+                            <strong>{r.total_mascotas ?? 0}</strong>
+                          ) : (
+                            <span style={{ color: "#9ca3af", fontSize: "12px" }}>
+                              No habilitado
+                            </span>
+                          )}
                         </td>
-                        <td>{r.total_mascotas ?? 0}</td>
                         <td>
                           <span className={claseEstado(r.estado)}>{r.estado}</span>
                         </td>
                         <td>
                           <div className="acciones" style={{ flexWrap: "wrap" }}>
+                            <button
+                              type="button"
+                              onClick={() => setRefugioDetalle(r)}
+                            >
+                              Ver ficha
+                            </button>
+
                             {r.estado === "pendiente" && (
                               <>
                                 <button
                                   type="button"
                                   className="aprobar"
-                                  onClick={() => aprobarRefugio(r)}
+                                  onClick={() => abrirAccionRefugio("aprobar", r)}
                                 >
                                   Aprobar
                                 </button>
                                 <button
                                   type="button"
                                   className="eliminar"
-                                  onClick={() => {
-                                    setRefugioRechazando(r);
-                                    setMotivoRechazo("");
-                                  }}
+                                  onClick={() => abrirAccionRefugio("rechazar", r)}
                                 >
                                   Rechazar
                                 </button>
                               </>
                             )}
+
                             {r.estado === "aprobado" && (
-                              <button
-                                type="button"
-                                className="eliminar"
-                                onClick={() => suspenderRefugio(r)}
-                              >
-                                Suspender
-                              </button>
+                              <>
+                                <button
+                                  type="button"
+                                  onClick={() => verMascotasDeRefugio(r)}
+                                >
+                                  Ver mascotas
+                                </button>
+                                <button
+                                  type="button"
+                                  className="eliminar"
+                                  onClick={() => abrirAccionRefugio("suspender", r)}
+                                >
+                                  Suspender
+                                </button>
+                              </>
                             )}
-                            {(r.estado === "suspendido" || r.estado === "rechazado") && (
+
+                            {r.estado === "suspendido" && (
                               <button
                                 type="button"
                                 className="aprobar"
-                                onClick={() => reactivarRefugio(r)}
+                                onClick={() => abrirAccionRefugio("reactivar", r)}
                               >
                                 Reactivar
                               </button>
                             )}
-                            <button
-                              type="button"
-                              onClick={() => verMascotasDeRefugio(r)}
-                            >
-                              Ver mascotas
-                            </button>
                           </div>
                         </td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
-                {refugios.length === 0 && (
-                  <p style={{ padding: "1rem" }}>
-                    No hay refugios registrados para este filtro.
+                {refugiosFiltrados.length === 0 && (
+                  <p style={{ padding: "1rem", color: "#6b7280" }}>
+                    No se encontraron refugios con los filtros aplicados.
                   </p>
-                )}
-              </div>
-            )}
-
-            {refugioSupervisado && (
-              <div className="admin-supervision-box">
-                <div className="admin-seccion-titulo" style={{ marginBottom: "12px" }}>
-                  <div>
-                    <h3>Mascotas de {refugioSupervisado.nombre_refugio}</h3>
-                    <p>Supervisión de publicaciones del refugio</p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setRefugioSupervisado(null);
-                      setMascotasRefugio([]);
-                    }}
-                  >
-                    Cerrar vista
-                  </button>
-                </div>
-
-                {mascotasRefugio.length === 0 ? (
-                  <p>Este refugio aún no tiene mascotas registradas.</p>
-                ) : (
-                  <div className="admin-tabla">
-                    <table>
-                      <thead>
-                        <tr>
-                          <th>ID</th>
-                          <th>Nombre</th>
-                          <th>Tipo</th>
-                          <th>Tamaño</th>
-                          <th>Edad</th>
-                          <th>Estado</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {mascotasRefugio.map((m) => (
-                          <tr key={m.id}>
-                            <td>{m.id}</td>
-                            <td>{m.nombre}</td>
-                            <td>{m.tipo}</td>
-                            <td>{m["tamaño"] || m.tamano}</td>
-                            <td>{m.edad} años</td>
-                            <td>
-                              <span className={claseEstado(m.estado)}>{m.estado}</span>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
                 )}
               </div>
             )}
@@ -871,7 +908,7 @@ function Admin() {
             <div className="admin-seccion-titulo">
               <div>
                 <h2>Mascotas</h2>
-                <p>Administra las mascotas generales y supervisa todas las registradas.</p>
+                <p>Publica perros o gatos generales y supervisa todas las mascotas.</p>
               </div>
 
               <button
@@ -917,8 +954,11 @@ function Admin() {
                     <select name="tipo" value={nuevaMascota.tipo} onChange={manejarCambio}>
                       <option value="Perro">Perro</option>
                       <option value="Gato">Gato</option>
-                      <option value="Ave">Ave</option>
-                      <option value="Conejo">Conejo</option>
+                      {tipoLegacyMascota && (
+                        <option value={tipoLegacyMascota}>
+                          {tipoLegacyMascota} (registro previo)
+                        </option>
+                      )}
                     </select>
                   </label>
 
@@ -1050,7 +1090,7 @@ function Admin() {
                           </button>
                           <button
                             className="eliminar"
-                            onClick={() => eliminarMascota(mascota.id)}
+                            onClick={() => setMascotaAEliminar(mascota)}
                           >
                             Eliminar
                           </button>
@@ -1112,7 +1152,7 @@ function Admin() {
             <div className="admin-seccion-titulo">
               <div>
                 <h2>Solicitudes de adopción</h2>
-                <p>Consulta todas las solicitudes reales registradas en la base de datos.</p>
+                <p>Consulta todas las solicitudes reales y revisa su detalle completo.</p>
               </div>
             </div>
 
@@ -1139,8 +1179,7 @@ function Admin() {
                       <th>ID</th>
                       <th>Solicitante</th>
                       <th>Mascota / Refugio</th>
-                      <th>Hogar y contacto</th>
-                      <th>Motivo</th>
+                      <th>Ciudad y contacto</th>
                       <th>Fecha</th>
                       <th>Estado</th>
                       <th>Acciones</th>
@@ -1163,12 +1202,11 @@ function Admin() {
                           </div>
                         </td>
                         <td>
-                          <div>{adopcion.telefono} · {adopcion.ciudad}</div>
+                          <div>{adopcion.ciudad}</div>
                           <div style={{ fontSize: "12px", color: "#777" }}>
-                            {adopcion.vivienda} · Otras mascotas: {adopcion.otras_mascotas}
+                            {adopcion.telefono}
                           </div>
                         </td>
-                        <td style={{ maxWidth: "220px" }}>{adopcion.motivo}</td>
                         <td>
                           {adopcion.fecha
                             ? new Date(adopcion.fecha).toLocaleDateString("es-CO")
@@ -1180,26 +1218,14 @@ function Admin() {
                           </span>
                         </td>
                         <td>
-                          {adopcion.estado === "Pendiente" ? (
-                            <div className="acciones">
-                              <button
-                                type="button"
-                                className="aprobar"
-                                onClick={() => responderAdopcion(adopcion.id, "Aprobada")}
-                              >
-                                Aprobar
-                              </button>
-                              <button
-                                type="button"
-                                className="eliminar"
-                                onClick={() => responderAdopcion(adopcion.id, "Rechazada")}
-                              >
-                                Rechazar
-                              </button>
-                            </div>
-                          ) : (
-                            <span style={{ fontSize: "12px", color: "#777" }}>Gestionada</span>
-                          )}
+                          <div className="acciones">
+                            <button
+                              type="button"
+                              onClick={() => abrirDetalleAdopcion(adopcion)}
+                            >
+                              Ver detalle
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     ))}
@@ -1287,6 +1313,562 @@ function Admin() {
           </section>
         )}
       </main>
+
+      {/* ================= MODAL FICHA DETALLADA DEL REFUGIO ================= */}
+      {refugioDetalle && (
+        <div
+          className="admin-modal-overlay"
+          role="dialog"
+          aria-modal="true"
+          onClick={() => setRefugioDetalle(null)}
+        >
+          <div className="admin-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="admin-modal-header">
+              <div>
+                <h3>Ficha del refugio: {refugioDetalle.nombre_refugio}</h3>
+                <p>
+                  Registrado el{" "}
+                  {refugioDetalle.creado_en
+                    ? new Date(refugioDetalle.creado_en).toLocaleDateString("es-CO")
+                    : "-"}
+                </p>
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                <span className={claseEstado(refugioDetalle.estado)}>
+                  {refugioDetalle.estado}
+                </span>
+                <button
+                  type="button"
+                  className="admin-modal-close"
+                  onClick={() => setRefugioDetalle(null)}
+                >
+                  ✕
+                </button>
+              </div>
+            </div>
+
+            <div className="admin-modal-body">
+              <div className="admin-detail-grid">
+                <div className="admin-detail-box">
+                  <span>Nombre del refugio</span>
+                  <strong>{refugioDetalle.nombre_refugio}</strong>
+                </div>
+                <div className="admin-detail-box">
+                  <span>Responsable</span>
+                  <strong>{refugioDetalle.nombre_responsable}</strong>
+                </div>
+                <div className="admin-detail-box">
+                  <span>Correo electrónico</span>
+                  <strong>{refugioDetalle.correo || "No disponible"}</strong>
+                </div>
+                <div className="admin-detail-box">
+                  <span>Teléfono</span>
+                  <strong>{refugioDetalle.telefono}</strong>
+                </div>
+                <div className="admin-detail-box">
+                  <span>Ciudad</span>
+                  <strong>{refugioDetalle.ciudad}</strong>
+                </div>
+                <div className="admin-detail-box">
+                  <span>Dirección</span>
+                  <strong>{refugioDetalle.direccion}</strong>
+                </div>
+                <div className="admin-detail-box">
+                  <span>Estado actual</span>
+                  <strong style={{ textTransform: "capitalize" }}>{refugioDetalle.estado}</strong>
+                </div>
+                <div className="admin-detail-box">
+                  <span>Mascotas registradas</span>
+                  <strong>
+                    {refugioDetalle.estado === "aprobado"
+                      ? refugioDetalle.total_mascotas ?? 0
+                      : "No habilitado (requiere aprobación activa)"}
+                  </strong>
+                </div>
+
+                {refugioDetalle.estado === "rechazado" && refugioDetalle.motivo_rechazo && (
+                  <div
+                    className="admin-detail-box full"
+                    style={{ background: "#fef2f2", borderColor: "#fecaca" }}
+                  >
+                    <span style={{ color: "#b91c1c" }}>Motivo del rechazo</span>
+                    <strong style={{ color: "#991b1b" }}>
+                      {refugioDetalle.motivo_rechazo}
+                    </strong>
+                  </div>
+                )}
+
+                {refugioDetalle.estado === "suspendido" && refugioDetalle.motivo_suspension && (
+                  <div
+                    className="admin-detail-box full"
+                    style={{ background: "#fef2f2", borderColor: "#fecaca" }}
+                  >
+                    <span style={{ color: "#b91c1c" }}>Motivo de la suspensión</span>
+                    <strong style={{ color: "#991b1b" }}>
+                      {refugioDetalle.motivo_suspension}
+                    </strong>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="admin-modal-footer">
+              <button
+                type="button"
+                className="admin-btn-sec"
+                onClick={() => setRefugioDetalle(null)}
+              >
+                Cerrar
+              </button>
+
+              {refugioDetalle.estado === "pendiente" && (
+                <>
+                  <button
+                    type="button"
+                    className="admin-btn-danger"
+                    onClick={() => {
+                      const target = refugioDetalle;
+                      setRefugioDetalle(null);
+                      abrirAccionRefugio("rechazar", target);
+                    }}
+                  >
+                    Rechazar solicitud
+                  </button>
+                  <button
+                    type="button"
+                    className="admin-btn-ok"
+                    onClick={() => {
+                      const target = refugioDetalle;
+                      setRefugioDetalle(null);
+                      abrirAccionRefugio("aprobar", target);
+                    }}
+                  >
+                    Aprobar refugio
+                  </button>
+                </>
+              )}
+
+              {refugioDetalle.estado === "aprobado" && (
+                <>
+                  <button
+                    type="button"
+                    className="admin-btn-sec"
+                    onClick={() => {
+                      const target = refugioDetalle;
+                      setRefugioDetalle(null);
+                      verMascotasDeRefugio(target);
+                    }}
+                  >
+                    Ver mascotas
+                  </button>
+                  <button
+                    type="button"
+                    className="admin-btn-danger"
+                    onClick={() => {
+                      const target = refugioDetalle;
+                      setRefugioDetalle(null);
+                      abrirAccionRefugio("suspender", target);
+                    }}
+                  >
+                    Suspender refugio
+                  </button>
+                </>
+              )}
+
+              {refugioDetalle.estado === "suspendido" && (
+                <button
+                  type="button"
+                  className="admin-btn-ok"
+                  onClick={() => {
+                    const target = refugioDetalle;
+                    setRefugioDetalle(null);
+                    abrirAccionRefugio("reactivar", target);
+                  }}
+                >
+                  Reactivar refugio
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ================= MODAL MASCOTAS DEL REFUGIO APROBADO ================= */}
+      {refugioSupervisado && (
+        <div
+          className="admin-modal-overlay"
+          role="dialog"
+          aria-modal="true"
+          onClick={() => setRefugioSupervisado(null)}
+        >
+          <div className="admin-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="admin-modal-header">
+              <div>
+                <h3>Mascotas de {refugioSupervisado.nombre_refugio}</h3>
+                <p>
+                  {refugioSupervisado.ciudad} · Responsable: {refugioSupervisado.nombre_responsable}
+                </p>
+              </div>
+              <button
+                type="button"
+                className="admin-modal-close"
+                onClick={() => setRefugioSupervisado(null)}
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="admin-modal-body">
+              {cargandoMascotasRefugio ? (
+                <p>Cargando mascotas del refugio...</p>
+              ) : mascotasRefugio.length === 0 ? (
+                <p style={{ color: "#6b7280", margin: 0 }}>
+                  Este refugio aprobado todavía no ha publicado mascotas.
+                </p>
+              ) : (
+                <div className="admin-modal-pets-grid">
+                  {mascotasRefugio.map((m) => (
+                    <div className="admin-modal-pet-item" key={m.id}>
+                      {m.imagen ? (
+                        <img src={m.imagen} alt={m.nombre} />
+                      ) : (
+                        <div
+                          style={{
+                            height: "130px",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            fontSize: "2.5rem",
+                            background: "#eaf4ff",
+                          }}
+                        >
+                          {m.tipo === "Gato" ? "🐱" : "🐶"}
+                        </div>
+                      )}
+                      <div style={{ padding: "10px 12px" }}>
+                        <strong style={{ display: "block", color: "#075f99" }}>
+                          {m.nombre}
+                        </strong>
+                        <p style={{ margin: "3px 0 8px", fontSize: "12px", color: "#6b7280" }}>
+                          {m.tipo} · {m.edad} {m.edad === 1 ? "año" : "años"} ·{" "}
+                          {m["tamaño"] || m.tamano}
+                        </p>
+                        <span className={claseEstado(m.estado)}>{m.estado}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="admin-modal-footer">
+              <button
+                type="button"
+                className="admin-btn-sec"
+                onClick={() => setRefugioSupervisado(null)}
+              >
+                Cerrar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ================= MODAL CONFIRMACIÓN / MOTIVO ACCIÓN REFUGIO ================= */}
+      {modalAccionRefugio && (
+        <div
+          className="admin-modal-overlay"
+          role="dialog"
+          aria-modal="true"
+          onClick={() => !procesandoRefugio && setModalAccionRefugio(null)}
+        >
+          <div className="admin-modal sm" onClick={(e) => e.stopPropagation()}>
+            <form onSubmit={ejecutarAccionRefugio}>
+              <div className="admin-modal-header">
+                <div>
+                  <h3>
+                    {modalAccionRefugio.tipo === "aprobar" && "Aprobar refugio"}
+                    {modalAccionRefugio.tipo === "rechazar" && "Rechazar solicitud de refugio"}
+                    {modalAccionRefugio.tipo === "suspender" && "Suspender refugio"}
+                    {modalAccionRefugio.tipo === "reactivar" && "Reactivar refugio"}
+                  </h3>
+                  <p>{modalAccionRefugio.refugio.nombre_refugio}</p>
+                </div>
+                <button
+                  type="button"
+                  className="admin-modal-close"
+                  disabled={procesandoRefugio}
+                  onClick={() => setModalAccionRefugio(null)}
+                >
+                  ✕
+                </button>
+              </div>
+
+              <div className="admin-modal-body">
+                {errorModalRefugio && (
+                  <div className="admin-alerta-error" style={{ marginBottom: 0 }}>
+                    ⚠️ {errorModalRefugio}
+                  </div>
+                )}
+
+                {modalAccionRefugio.tipo === "aprobar" && (
+                  <p style={{ margin: 0, lineHeight: 1.5 }}>
+                    ¿Confirmas aprobar al refugio{" "}
+                    <strong>{modalAccionRefugio.refugio.nombre_refugio}</strong>? Podrá iniciar sesión, publicar mascotas y gestionar solicitudes de adopción.
+                  </p>
+                )}
+
+                {modalAccionRefugio.tipo === "reactivar" && (
+                  <p style={{ margin: 0, lineHeight: 1.5 }}>
+                    ¿Confirmas reactivar al refugio{" "}
+                    <strong>{modalAccionRefugio.refugio.nombre_refugio}</strong>? Sus funciones y mascotas volverán a estar habilitadas.
+                  </p>
+                )}
+
+                {(modalAccionRefugio.tipo === "rechazar" ||
+                  modalAccionRefugio.tipo === "suspender") && (
+                  <>
+                    <p style={{ margin: 0, lineHeight: 1.5 }}>
+                      {modalAccionRefugio.tipo === "rechazar"
+                        ? "Indica el motivo del rechazo. El refugio verá esta justificación si intenta iniciar sesión."
+                        : "Indica el motivo obligatorio de la suspensión. Todas las funciones y mascotas de este refugio quedarán bloqueadas."}
+                    </p>
+                    <textarea
+                      className="admin-modal-textarea"
+                      rows="3"
+                      placeholder="Escribe el motivo (mínimo 5 caracteres)..."
+                      value={motivoAccionRefugio}
+                      onChange={(e) => setMotivoAccionRefugio(e.target.value)}
+                      required
+                      minLength={5}
+                      disabled={procesandoRefugio}
+                    />
+                  </>
+                )}
+              </div>
+
+              <div className="admin-modal-footer">
+                <button
+                  type="button"
+                  className="admin-btn-sec"
+                  disabled={procesandoRefugio}
+                  onClick={() => setModalAccionRefugio(null)}
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className={
+                    modalAccionRefugio.tipo === "aprobar" ||
+                    modalAccionRefugio.tipo === "reactivar"
+                      ? "admin-btn-ok"
+                      : "admin-btn-danger"
+                  }
+                  disabled={procesandoRefugio}
+                >
+                  {procesandoRefugio ? "Procesando..." : "Confirmar"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ================= MODAL DETALLE DE ADOPCIÓN (ADMIN) ================= */}
+      {adopcionDetalle && (
+        <div
+          className="admin-modal-overlay"
+          role="dialog"
+          aria-modal="true"
+          onClick={() => !procesandoAdop && setAdopcionDetalle(null)}
+        >
+          <div className="admin-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="admin-modal-header">
+              <div>
+                <h3>Solicitud de adopción #{adopcionDetalle.id}</h3>
+                <p>
+                  {adopcionDetalle.mascota_nombre} ·{" "}
+                  {adopcionDetalle.refugio_nombre || "RefugiPet (General)"}
+                </p>
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                <span className={claseEstado(adopcionDetalle.estado)}>
+                  {adopcionDetalle.estado}
+                </span>
+                <button
+                  type="button"
+                  className="admin-modal-close"
+                  onClick={() => !procesandoAdop && setAdopcionDetalle(null)}
+                >
+                  ✕
+                </button>
+              </div>
+            </div>
+
+            <div className="admin-modal-body">
+              <div className="admin-detail-grid">
+                <div className="admin-detail-box">
+                  <span>Solicitante</span>
+                  <strong>{adopcionDetalle.usuario_nombre}</strong>
+                </div>
+                <div className="admin-detail-box">
+                  <span>Correo</span>
+                  <strong>{adopcionDetalle.usuario_correo}</strong>
+                </div>
+                <div className="admin-detail-box">
+                  <span>Teléfono</span>
+                  <strong>{adopcionDetalle.telefono}</strong>
+                </div>
+                <div className="admin-detail-box">
+                  <span>Ciudad</span>
+                  <strong>{adopcionDetalle.ciudad}</strong>
+                </div>
+                <div className="admin-detail-box">
+                  <span>Vivienda</span>
+                  <strong>{adopcionDetalle.vivienda}</strong>
+                </div>
+                <div className="admin-detail-box">
+                  <span>Otras mascotas</span>
+                  <strong>{adopcionDetalle.otras_mascotas}</strong>
+                </div>
+                <div className="admin-detail-box">
+                  <span>Convivencia</span>
+                  <strong>{adopcionDetalle.convivencia || "No especificada"}</strong>
+                </div>
+                <div className="admin-detail-box">
+                  <span>Experiencia</span>
+                  <strong>{adopcionDetalle.experiencia_mascotas || "No especificada"}</strong>
+                </div>
+                <div className="admin-detail-box full">
+                  <span>Motivo de adopción</span>
+                  <strong>{adopcionDetalle.motivo}</strong>
+                </div>
+                <div className="admin-detail-box full">
+                  <span>Referencias</span>
+                  <strong>{adopcionDetalle.referencias || "No especificadas"}</strong>
+                </div>
+                {adopcionDetalle.motivo_rechazo && (
+                  <div
+                    className="admin-detail-box full"
+                    style={{ background: "#fef2f2", borderColor: "#fecaca" }}
+                  >
+                    <span style={{ color: "#b91c1c" }}>Motivo de rechazo</span>
+                    <strong style={{ color: "#991b1b" }}>
+                      {adopcionDetalle.motivo_rechazo}
+                    </strong>
+                  </div>
+                )}
+              </div>
+
+              {accionAdopcion === "rechazar" && (
+                <div>
+                  <label style={{ display: "block", fontWeight: 700, marginBottom: "6px", color: "#b91c1c" }}>
+                    Motivo del rechazo (mín. 5 caracteres)
+                  </label>
+                  <textarea
+                    className="admin-modal-textarea"
+                    rows="3"
+                    value={motivoRechazoAdop}
+                    onChange={(e) => setMotivoRechazoAdop(e.target.value)}
+                    placeholder="Indica la razón del rechazo..."
+                  />
+                </div>
+              )}
+            </div>
+
+            <div className="admin-modal-footer">
+              <button
+                type="button"
+                className="admin-btn-sec"
+                disabled={procesandoAdop}
+                onClick={() => setAdopcionDetalle(null)}
+              >
+                Cerrar
+              </button>
+
+              {adopcionDetalle.estado === "Pendiente" && !accionAdopcion && (
+                <>
+                  <button
+                    type="button"
+                    className="admin-btn-danger"
+                    onClick={() => setAccionAdopcion("rechazar")}
+                  >
+                    Rechazar
+                  </button>
+                  <button
+                    type="button"
+                    className="admin-btn-ok"
+                    onClick={() => {
+                      setAccionAdopcion("aprobar");
+                    }}
+                  >
+                    Aprobar
+                  </button>
+                </>
+              )}
+
+              {accionAdopcion && (
+                <button
+                  type="button"
+                  className={accionAdopcion === "aprobar" ? "admin-btn-ok" : "admin-btn-danger"}
+                  disabled={procesandoAdop}
+                  onClick={confirmarRespuestaAdopcion}
+                >
+                  {procesandoAdop ? "Guardando..." : "Confirmar decisión"}
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ================= MODAL CONFIRMACIÓN ELIMINAR MASCOTA ================= */}
+      {mascotaAEliminar && (
+        <div
+          className="admin-modal-overlay"
+          role="dialog"
+          aria-modal="true"
+          onClick={() => setMascotaAEliminar(null)}
+        >
+          <div className="admin-modal sm" onClick={(e) => e.stopPropagation()}>
+            <div className="admin-modal-header">
+              <div>
+                <h3>Confirmar eliminación</h3>
+                <p>Mascota: {mascotaAEliminar.nombre}</p>
+              </div>
+              <button
+                type="button"
+                className="admin-modal-close"
+                onClick={() => setMascotaAEliminar(null)}
+              >
+                ✕
+              </button>
+            </div>
+            <div className="admin-modal-body">
+              <p style={{ margin: 0, lineHeight: 1.5 }}>
+                ¿Seguro que quieres eliminar o retirar a{" "}
+                <strong>{mascotaAEliminar.nombre}</strong>? Si tiene solicitudes de adopción registradas, se conservará el historial marcándola como <em>Retirada</em>.
+              </p>
+            </div>
+            <div className="admin-modal-footer">
+              <button
+                type="button"
+                className="admin-btn-sec"
+                onClick={() => setMascotaAEliminar(null)}
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                className="admin-btn-danger"
+                onClick={confirmarEliminarMascota}
+              >
+                Sí, confirmar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -20,6 +20,7 @@ from ..schemas import (
 )
 from ..dependencies import get_current_refugio
 from ..security import verify_password, hash_password
+from ..services_notificaciones import crear_notificacion
 
 
 router = APIRouter(
@@ -57,6 +58,18 @@ def obtener_dashboard_refugio(
         Mascota.estado == "Adoptada"
     ).count()
 
+    total_perros = db.query(Mascota).filter(
+        Mascota.refugio_id == refugio.id,
+        Mascota.tipo == "Perro",
+        Mascota.estado != "Retirada"
+    ).count()
+
+    total_gatos = db.query(Mascota).filter(
+        Mascota.refugio_id == refugio.id,
+        Mascota.tipo == "Gato",
+        Mascota.estado != "Retirada"
+    ).count()
+
     # Solicitudes de adopción de mascotas de este refugio
     consultas_adopciones = db.query(Adopcion).join(
         Mascota, Adopcion.mascota_id == Mascota.id
@@ -73,6 +86,8 @@ def obtener_dashboard_refugio(
         "total_mascotas": total_mascotas,
         "mascotas_disponibles": mascotas_disponibles,
         "mascotas_adoptadas": mascotas_adoptadas,
+        "total_perros": total_perros,
+        "total_gatos": total_gatos,
         "solicitudes_pendientes": solicitudes_pendientes,
         "solicitudes_totales": solicitudes_totales
     }
@@ -399,6 +414,31 @@ def responder_solicitud_adopcion(
         _rechazar_solicitud_adopcion(adopcion, datos)
 
     adopcion.estado = datos.estado
+
+    if datos.estado == "Aprobada" and mascota:
+        crear_notificacion(
+            db=db,
+            usuario_id=adopcion.usuario_id,
+            titulo=f"¡Tu solicitud para {mascota.nombre} fue aprobada!",
+            mensaje=(
+                f"El refugio {refugio.nombre_refugio} aprobó tu solicitud de adopción "
+                f"para {mascota.nombre}. Pronto se pondrán en contacto contigo."
+            ),
+            tipo="adopcion_aprobada",
+            enlace="/mis-solicitudes"
+        )
+    elif datos.estado == "Rechazada" and mascota:
+        crear_notificacion(
+            db=db,
+            usuario_id=adopcion.usuario_id,
+            titulo=f"Respuesta sobre tu solicitud para {mascota.nombre}",
+            mensaje=(
+                f"El refugio {refugio.nombre_refugio} rechazó tu solicitud para {mascota.nombre}. "
+                f"Motivo: {adopcion.motivo_rechazo}"
+            ),
+            tipo="adopcion_rechazada",
+            enlace="/mis-solicitudes"
+        )
 
     db.commit()
     db.refresh(adopcion)

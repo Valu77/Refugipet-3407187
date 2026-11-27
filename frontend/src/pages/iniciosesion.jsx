@@ -3,6 +3,7 @@ import "../inciosesion.css";
 import { useState } from "react";
 import logo from "../assets/logo.png";
 import { Link, useNavigate } from "react-router-dom";
+import { apiFetch } from "../services/api";
 
 function Iniciosesion() {
   const navigate = useNavigate();
@@ -18,7 +19,7 @@ function Iniciosesion() {
     setCargando(true);
 
     try {
-      const respuesta = await fetch("http://127.0.0.1:8000/api/auth/login", {
+      const datos = await apiFetch("/auth/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
@@ -28,22 +29,6 @@ function Iniciosesion() {
           password: password
         })
       });
-
-      const datos = await respuesta.json();
-
-      if (!respuesta.ok) {
-        let mensaje = "Correo o contraseña incorrectos";
-        if (datos.detail) {
-          if (Array.isArray(datos.detail)) {
-            mensaje = datos.detail.map((err) => err.msg || err).join(", ");
-          } else {
-            mensaje = datos.detail;
-          }
-        }
-        setError(mensaje);
-        setCargando(false);
-        return;
-      }
 
       localStorage.setItem("token", datos.access_token);
       localStorage.setItem("usuario", JSON.stringify(datos.usuario));
@@ -55,8 +40,8 @@ function Iniciosesion() {
       } else {
         navigate("/principal");
       }
-    } catch (_err) {
-      setError("No se pudo conectar con el servidor.");
+    } catch (err) {
+      setError(err.message || "No se pudo conectar con el servidor.");
     } finally {
       setCargando(false);
     }
@@ -110,7 +95,7 @@ function Iniciosesion() {
               Recordarme
             </label>
 
-            <a href="#">Olvidaste tu contrasena?</a>
+            <Link to="/olvide-password">¿Olvidaste tu contraseña?</Link>
           </div>
 
           <button type="submit" className="login-button" disabled={cargando}>

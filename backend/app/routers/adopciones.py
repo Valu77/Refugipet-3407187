@@ -27,6 +27,7 @@ from ..dependencies import (
     get_current_user,
     get_current_admin
 )
+from ..services_notificaciones import crear_notificacion, notificar_admins
 
 
 router = APIRouter(
@@ -112,6 +113,32 @@ def crear_adopcion(
     )
 
     db.add(adopcion)
+    db.flush()
+
+    if mascota.refugio_id and mascota.refugio:
+        crear_notificacion(
+            db=db,
+            usuario_id=mascota.refugio.usuario_id,
+            titulo=f"Nueva solicitud de adopción para {mascota.nombre}",
+            mensaje=(
+                f"{usuario.nombre} ({adopcion.ciudad}) envió una solicitud de adopción "
+                f"para {mascota.nombre}."
+            ),
+            tipo="solicitud_adopcion",
+            enlace="/refugio"
+        )
+    else:
+        notificar_admins(
+            db=db,
+            titulo=f"Nueva solicitud de adopción para {mascota.nombre}",
+            mensaje=(
+                f"{usuario.nombre} ({adopcion.ciudad}) envió una solicitud de adopción "
+                f"para {mascota.nombre}."
+            ),
+            tipo="solicitud_adopcion",
+            enlace="/admin"
+        )
+
     db.commit()
     db.refresh(adopcion)
 
@@ -238,6 +265,32 @@ def actualizar_adopcion(
         adopcion.motivo_rechazo = datos.motivo_rechazo.strip()
 
     adopcion.estado = datos.estado
+
+    if datos.estado in ("Aprobada", "Rechazada") and mascota:
+        if datos.estado == "Aprobada":
+            crear_notificacion(
+                db=db,
+                usuario_id=adopcion.usuario_id,
+                titulo=f"¡Solicitud aprobada para {mascota.nombre}!",
+                mensaje=(
+                    f"Tu solicitud de adopción para {mascota.nombre} fue aprobada. "
+                    "Pronto se comunicarán contigo para coordinar la entrega."
+                ),
+                tipo="adopcion_aprobada",
+                enlace="/mis-solicitudes"
+            )
+        else:
+            motivo_txt = f" Motivo: {adopcion.motivo_rechazo}" if adopcion.motivo_rechazo else ""
+            crear_notificacion(
+                db=db,
+                usuario_id=adopcion.usuario_id,
+                titulo=f"Actualización de solicitud para {mascota.nombre}",
+                mensaje=(
+                    f"Tu solicitud de adopción para {mascota.nombre} fue rechazada.{motivo_txt}"
+                ),
+                tipo="adopcion_rechazada",
+                enlace="/mis-solicitudes"
+            )
 
     db.commit()
     db.refresh(adopcion)

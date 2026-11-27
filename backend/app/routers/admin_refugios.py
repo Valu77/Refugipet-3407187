@@ -16,6 +16,7 @@ from ..schemas import (
     MascotaRespuesta
 )
 from ..dependencies import get_current_admin
+from ..services_notificaciones import crear_notificacion
 
 
 router = APIRouter(
@@ -82,6 +83,14 @@ def aprobar_refugio(
     refugio.estado = "aprobado"
     refugio.motivo_rechazo = None
     refugio.motivo_suspension = None
+    crear_notificacion(
+        db=db,
+        usuario_id=refugio.usuario_id,
+        titulo="¡Tu refugio fue aprobado!",
+        mensaje=f"El refugio '{refugio.nombre_refugio}' ya está aprobado y habilitado para publicar mascotas.",
+        tipo="refugio_aprobado",
+        enlace="/refugio"
+    )
     db.commit()
     db.refresh(refugio)
 
@@ -129,6 +138,14 @@ def rechazar_refugio(
     refugio.estado = "rechazado"
     refugio.motivo_rechazo = datos.motivo_rechazo.strip()
     refugio.motivo_suspension = None
+    crear_notificacion(
+        db=db,
+        usuario_id=refugio.usuario_id,
+        titulo="Solicitud de refugio rechazada",
+        mensaje=f"Tu solicitud para '{refugio.nombre_refugio}' fue rechazada. Motivo: {refugio.motivo_rechazo}",
+        tipo="refugio_rechazado",
+        enlace="/iniciosesion"
+    )
     db.commit()
     db.refresh(refugio)
 
@@ -176,6 +193,14 @@ def suspender_refugio(
 
     refugio.estado = "suspendido"
     refugio.motivo_suspension = motivo
+    crear_notificacion(
+        db=db,
+        usuario_id=refugio.usuario_id,
+        titulo="Refugio suspendido temporalmente",
+        mensaje=f"El refugio '{refugio.nombre_refugio}' fue suspendido. Motivo: {motivo}",
+        tipo="refugio_suspendido",
+        enlace="/iniciosesion"
+    )
     db.commit()
     db.refresh(refugio)
 
@@ -209,6 +234,14 @@ def reactivar_refugio(
     refugio.estado = "aprobado"
     refugio.motivo_rechazo = None
     refugio.motivo_suspension = None
+    crear_notificacion(
+        db=db,
+        usuario_id=refugio.usuario_id,
+        titulo="Refugio reactivado",
+        mensaje=f"Tu refugio '{refugio.nombre_refugio}' fue reactivado y vuelve a estar operativo.",
+        tipo="refugio_reactivado",
+        enlace="/refugio"
+    )
     db.commit()
     db.refresh(refugio)
 
@@ -240,11 +273,7 @@ def obtener_mascotas_de_refugio(
     if refugio.estado != "aprobado":
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail=(
-                "Debe proporcionar una justificación clara de al menos "
-                "5 caracteres para rechazar la solicitud."
-                 )
-
+            detail="No es posible consultar las mascotas porque el refugio no se encuentra aprobado."
         )
 
     mascotas = db.query(Mascota).filter(
@@ -299,6 +328,8 @@ def obtener_estadisticas_generales(
     total_mascotas = db.query(Mascota).filter(Mascota.estado != "Retirada").count()
     mascotas_disponibles = db.query(Mascota).filter(Mascota.estado == "Disponible").count()
     mascotas_adoptadas = db.query(Mascota).filter(Mascota.estado == "Adoptada").count()
+    total_perros = db.query(Mascota).filter(Mascota.tipo == "Perro", Mascota.estado != "Retirada").count()
+    total_gatos = db.query(Mascota).filter(Mascota.tipo == "Gato", Mascota.estado != "Retirada").count()
     total_adopciones = db.query(Adopcion).count()
     adopciones_pendientes = db.query(Adopcion).filter(Adopcion.estado == "Pendiente").count()
     contactos_no_leidos = db.query(Contacto).filter(Contacto.estado == "No leído").count()
@@ -311,6 +342,8 @@ def obtener_estadisticas_generales(
         "total_mascotas": total_mascotas,
         "mascotas_disponibles": mascotas_disponibles,
         "mascotas_adoptadas": mascotas_adoptadas,
+        "total_perros": total_perros,
+        "total_gatos": total_gatos,
         "total_adopciones": total_adopciones,
         "adopciones_pendientes": adopciones_pendientes,
         "contactos_no_leidos": contactos_no_leidos

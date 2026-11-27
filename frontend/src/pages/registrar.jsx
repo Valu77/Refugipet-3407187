@@ -128,7 +128,7 @@ function Registrar() {
       }
 
       setRegistroExitoso(true);
-    } catch (_err) {
+    } catch {
       setError("No se pudo conectar con el servidor.");
     } finally {
       setCargando(false);

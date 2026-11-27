@@ -2,13 +2,12 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
+import { apiFetch } from "../services/api";
 import "../principal.css";
 
 const emojiPorTipo = {
   Perro: "🐶",
   Gato: "🐱",
-  Ave: "🐦",
-  Conejo: "🐰",
 };
 
 function Principal() {
@@ -21,16 +20,10 @@ function Principal() {
     setError("");
 
     try {
-      const respuesta = await fetch("http://127.0.0.1:8000/api/mascotas/");
-
-      if (!respuesta.ok) {
-        throw new Error("No se pudieron cargar las mascotas");
-      }
-
-      const datos = await respuesta.json();
+      const datos = await apiFetch("/mascotas/");
       setMascotas(datos);
-    } catch (_err) {
-      setError("No se pudo conectar con el servidor.");
+    } catch (err) {
+      setError(err.message || "No se pudo conectar con el servidor.");
     } finally {
       setCargando(false);
     }
@@ -130,7 +123,15 @@ function Principal() {
                 {mascotasDestacadas.map((mascota) => (
                   <article className="pet-card" key={mascota.id}>
                     <div className="pet-card-image-wrapper">
-                      {mascota.estado && mascota.estado !== "Adoptada" && (
+                      {mascota.estado === "Adoptada" ? (
+                        <span className="status-badge" style={{ backgroundColor: "#6B7280", color: "#fff" }}>
+                          Adoptada
+                        </span>
+                      ) : mascota.en_proceso ? (
+                        <span className="status-badge" style={{ backgroundColor: "#F59E0B", color: "#fff" }}>
+                          En proceso
+                        </span>
+                      ) : (
                         <span className="status-badge disponible">Disponible</span>
                       )}
                       {mascota.imagen ? (
